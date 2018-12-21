@@ -879,12 +879,8 @@ class PbMsgSendSchedule(HexBase):
 
 		for i in range(len(self.txCanIdPeriodList))
 			# 根据发送信号的数量更改调度表中的第一列
-<<<<<<< HEAD
-			self.PbMsgSendSchedule[i%10][0] = str((len(self.txCanIdPeriodList) // (10 + i + 1))) + 'u'
-=======
-			# self.PbMsgSendSchedule[i%10][0] = str((len(self.txCanIdPeriodList) // (10 + i + 1)) + 1) + 'u'
 			self.PbMsgSendSchedule[i][0] = str(((len(self.txCanIdPeriodList) + 9 - i) // 10)) + 'u'
->>>>>>> 885ae3ce4c3f438c53d76f50ed4d9ae158bec42e
+
 		
 		# 根据发送信号更改调度表中的其他列
 		for index in range(len(self.txCanIdPeriodList)):
