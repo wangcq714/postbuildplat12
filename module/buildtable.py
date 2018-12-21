@@ -877,8 +877,6 @@ class PbMsgSendSchedule(HexBase):
 			self.PbMsgSendSchedule.append(["0u","0xFFu","0u","0xFFu","0u","0xFFu","0u","0xFFu","0u","0xFFu","0u",\
 												"0xFFu","0u","0xFFu","0u","0xFFu","0u","0xFFu","0u","0xFFu","0u"])
 
-		for i in range(len(self.txCanIdPeriodList))
-			# 根据发送信号的数量更改调度表中的第一列
 			self.PbMsgSendSchedule[i][0] = str(((len(self.txCanIdPeriodList) + 9 - i) // 10)) + 'u'
 
 		
