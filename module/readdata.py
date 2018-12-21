@@ -10,11 +10,14 @@ class RouterTable(object):
 	def get_file_pathname(self):
 		"""获取路由表路径"""
 		self.pathName = askopenfilename(filetypes = [("Excel",".csv")])
+		print(self.pathName)
+		print(type(self.pathName))
 
 	def read_data(self, row:str):
 		"""从路由表中读取数据"""
-		dataFrame = pandas.read_csv(self.pathName, header=None, na_values="", usecols=[i for i in range(column_index_from_string(row))])
-		self.dataList = dataFrame.fillna("None").values[1:].tolist()
+		if self.pathName != "" and self.pathName != ():
+			dataFrame = pandas.read_csv(self.pathName, header=None, na_values="", usecols=[i for i in range(column_index_from_string(row))])
+			self.dataList = dataFrame.fillna("None").values[1:].tolist()
 
 
 # 普通报文类
@@ -27,6 +30,14 @@ class MsgRoute(RouterTable):
 
 # 信号报文类
 class SignalRoute(RouterTable):
+	"""信号报文信息"""
+	def __init__(self):
+		self.pathName = ""
+		self.dataList = []
+
+
+# 诊断请求报文类
+class DiagReqRoute(RouterTable):
 	"""信号报文信息"""
 	def __init__(self):
 		self.pathName = ""

@@ -798,26 +798,37 @@ class PbMsgSrcTable(object):
 	def __src_signal_index_data_handling(self, index):
 		"""对发送信号对应的源信号在源信号中的索引进行处理"""
 		retList = []
-		# 获取发送信号对应的源信号索引放入列表中
-		for i in range(len(self.srcSignalListList[index])):
-			retList.append(str(self.recvSignalList.index(self.srcSignalListList[index][i])))
-		# 以发送信号对应的最多源信号量为长度对列表进行填充
-		for i in range(len(max(self.srcSignalListList, key=lambda subList:len(subList))) - len(self.srcSignalListList[index])):
-			retList.append("0xFFu")
+		if self.srcSignalListList:		
+			# 获取发送信号对应的源信号索引放入列表中
+			for i in range(len(self.srcSignalListList[index])):
+				retList.append(str(self.recvSignalList.index(self.srcSignalListList[index][i])))
+			# 以发送信号对应的最多源信号量为长度对列表进行填充
+			for i in range(len(max(self.srcSignalListList, key=lambda subList:len(subList))) - len(self.srcSignalListList[index])):
+				retList.append("0xFFu")
+		else:
+			for i in range(8):
+				retList.append("0xFFu")
 
 		# print(retList)
 		return retList	
 
-
 	def data_handle(self):
 		"""数据处理"""
-		for index in range(len(self.srcSignalListList)):
-			self.PbMsgSrcTableList.append(self.__src_signal_index_data_handling(index))
+		if self.srcSignalListList:
+			for index in range(len(self.srcSignalListList)):
+				self.PbMsgSrcTableList.append(self.__src_signal_index_data_handling(index))
+		else:
+			for index in range(8):
+				self.PbMsgSrcTableList.append(self.__src_signal_index_data_handling(index))
 
 	def build_table(self):
 		"""创建数组表"""
-		self.PB_Msg_Src_Table.append("const uint8 PB_Msg_Src_Table[" + str(len(self.srcSignalListList)) + "][" + \
-										str(len(max(self.srcSignalListList, key=lambda subList:len(subList)))) + "] =\n")
+		if self.srcSignalListList:
+			self.PB_Msg_Src_Table.append("const uint8 PB_Msg_Src_Table[" + str(len(self.srcSignalListList)) + "][" + \
+											str(len(max(self.srcSignalListList, key=lambda subList:len(subList)))) + "] =\n")
+		else:
+			self.PB_Msg_Src_Table.append("const uint8 PB_Msg_Src_Table[" + '8' + "][" + '8' + "] =\n")
+
 		self.PB_Msg_Src_Table.append("{\n")
 		for subList in self.PbMsgSrcTableList:
 			self.PB_Msg_Src_Table.append(','.join(subList))
@@ -857,7 +868,7 @@ class PbMsgSendSchedule(HexBase):
 			if txList not in self.txCanIdPeriodList:
 				self.txCanIdPeriodList.append(txList)
 		self.txCanIdPeriodList = sorted(self.txCanIdPeriodList, key=lambda subList:[int(subList[1]), int(subList[0], 16)])
-		# print(self.txCanIdPeriodList)
+		print(self.txCanIdPeriodList)
 		# print(len(self.txCanIdPeriodList))
 
 	def data_handle(self):
@@ -866,8 +877,9 @@ class PbMsgSendSchedule(HexBase):
 			self.PbMsgSendSchedule.append(["0u","0xFFu","0u","0xFFu","0u","0xFFu","0u","0xFFu","0u","0xFFu","0u",\
 												"0xFFu","0u","0xFFu","0u","0xFFu","0u","0xFFu","0u","0xFFu","0u"])
 
+		for i in range(len(self.txCanIdPeriodList))
 			# 根据发送信号的数量更改调度表中的第一列
-			self.PbMsgSendSchedule[i%10][0] = str((len(self.txCanIdPeriodList) // (10 + i + 1)) + 1) + 'u'
+			self.PbMsgSendSchedule[i%10][0] = str((len(self.txCanIdPeriodList) // (10 + i + 1))) + 'u'
 		
 		# 根据发送信号更改调度表中的其他列
 		for index in range(len(self.txCanIdPeriodList)):
@@ -878,14 +890,14 @@ class PbMsgSendSchedule(HexBase):
 				self.PbMsgSendSchedule[index%10][(index//10)*2 + 1] = hex(index) + 'u'
 			self.PbMsgSendSchedule[index%10][(index//10)*2 + 2] = str(int(self.txCanIdPeriodList[index][1])//10) + 'u'
 
-		# print(self.PbMsgSendSchedule)
+		print(self.PbMsgSendSchedule)
 
 
 	def build_table(self):
 		"""创建数组表"""
 		self.PB_Msg_Send_Schedule.append("/*------------------table7: PB_Msg_Send_Schedule -----------------------------*/\n")
 		self.PB_Msg_Send_Schedule.append("const PB_TABLE_SCH_TYPE PB_Msg_Send_Schedule[10] __at(0x00c09b0e) =\n")
-		self.PB_Msg_Send_Schedule.append("{")
+		self.PB_Msg_Send_Schedule.append("{\n")
 		for subList in self.PbMsgSendSchedule:
 			self.PB_Msg_Send_Schedule.append("{")
 			self.PB_Msg_Send_Schedule.append(subList[0] + ',')
@@ -1168,6 +1180,12 @@ class Id2IndexTable(RoutingTable, HexBase):
 		self.id2index_table.extend(self.id2index_table_d)
 		self.id2index_table.extend(self.id2index_table_e)
 		self.id2index_table.extend(self.id2index_table_f)
+
+
+# 诊断请求路由表
+class DiagRoutingTable(HexBase):
+	"""DiagRoutingTable"""
+	pass
 
 
 if __name__ == '__main__':
