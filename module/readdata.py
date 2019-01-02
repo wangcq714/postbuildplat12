@@ -58,11 +58,12 @@ class ReadHex(object):
 
 	def read_hex(self):
 		"""读取hex"""
-		with open(self.pathName, "r") as hexf:
-			for colData in hexf:
-				self.hexData.append(colData)
+		if self.pathName != "" and self.pathName != ():
+			with open(self.pathName, "r") as hexf:
+				for colData in hexf:
+					self.hexData.append(colData)
 
-		# print(self.hexData[0:10])
+			# print(self.hexData[0:10])
 
 
 if __name__ == '__main__':

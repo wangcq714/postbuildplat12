@@ -52,58 +52,60 @@ class HexBase(object):
 			self.lenHexDataList.append(tmpHexStr[4:6])
 			self.lenHexDataList.append(tmpHexStr[2:4])
 			self.lenHexDataList.append(tmpHexStr[0:2])
-		print(self.lenHexDataList)
+		# print(self.lenHexDataList)
 
 	def modify_hex_data(self, originalhexDataList, addr, dataLen, hexDataList):
 		"""修改原始hex数据"""
-		if int(addr, 16) >= int("0x00c40000", 16):
-			# block = 4
-			self.offset = ((int(addr, 16) - int("0x00c10000", 16) + int("0x0000F000", 16))//32) + 5
-		elif int(addr, 16) >= int("0x00c30000", 16):
-			# block = 3
-			self.offset = ((int(addr, 16) - int("0x00c10000", 16) + int("0x0000F000", 16))//32) + 4
-		elif int(addr, 16) >= int("0x00c20000", 16):
-			# block = 2
-			self.offset = ((int(addr, 16) - int("0x00c10000", 16) + int("0x0000F000", 16))//32) + 3
-		elif int(addr, 16) >= int("0x00c10000", 16):
-			# block = 1
-			self.offset = ((int(addr, 16) - int("0x00c10000", 16) + int("0x0000F000", 16))//32) + 2
-		else:
-			# block = 0
-			self.offset = ((int(addr, 16) - int("0x00c00000", 16))//32) + 1
+		# 如果源HEX数据为空，默认未选择hex，以下不执行
+		if originalhexDataList != []:
+			if int(addr, 16) >= int("0x00c40000", 16):
+				# block = 4
+				self.offset = ((int(addr, 16) - int("0x00c10000", 16) + int("0x0000F000", 16))//32) + 5
+			elif int(addr, 16) >= int("0x00c30000", 16):
+				# block = 3
+				self.offset = ((int(addr, 16) - int("0x00c10000", 16) + int("0x0000F000", 16))//32) + 4
+			elif int(addr, 16) >= int("0x00c20000", 16):
+				# block = 2
+				self.offset = ((int(addr, 16) - int("0x00c10000", 16) + int("0x0000F000", 16))//32) + 3
+			elif int(addr, 16) >= int("0x00c10000", 16):
+				# block = 1
+				self.offset = ((int(addr, 16) - int("0x00c10000", 16) + int("0x0000F000", 16))//32) + 2
+			else:
+				# block = 0
+				self.offset = ((int(addr, 16) - int("0x00c00000", 16))//32) + 1
 
-		self.byteOffset = int(addr, 16)%32
-		print(self.offset)
-		print(self.byteOffset)
-		# print(originalhexDataList)
+			self.byteOffset = int(addr, 16)%32
+			print(self.offset)
+			print(self.byteOffset)
+			# print(originalhexDataList)
 
-		offset = copy.deepcopy(self.offset)
-		byteOffset = copy.deepcopy(self.byteOffset)
-		# 清零				
-		for index in range(dataLen):
-			originalhexDataList[offset] = originalhexDataList[offset][0:9] + originalhexDataList[offset][9:9+byteOffset*2] + \
-										"00" + originalhexDataList[offset][9+byteOffset*2 + 2:]
-			byteOffset += 1
-			if byteOffset > 31:
-				byteOffset = 0
-				if len(originalhexDataList[offset+1]) < 75:
-					offset += 2
-				else:
-					offset += 1
+			offset = copy.deepcopy(self.offset)
+			byteOffset = copy.deepcopy(self.byteOffset)
+			# 清零				
+			for index in range(dataLen):
+				originalhexDataList[offset] = originalhexDataList[offset][0:9] + originalhexDataList[offset][9:9+byteOffset*2] + \
+											"00" + originalhexDataList[offset][9+byteOffset*2 + 2:]
+				byteOffset += 1
+				if byteOffset > 31:
+					byteOffset = 0
+					if len(originalhexDataList[offset+1]) < 75: # 75代表每一数据行的字符个数
+						offset += 2
+					else:
+						offset += 1
 
-		offset = copy.deepcopy(self.offset)
-		byteOffset = copy.deepcopy(self.byteOffset)
-		# 重新写入
-		for index in range(len(hexDataList)):
-			originalhexDataList[offset] = originalhexDataList[offset][0:9] + originalhexDataList[offset][9:9+byteOffset*2] + \
-										hexDataList[index] + originalhexDataList[offset][9+byteOffset*2 + 2:]
-			byteOffset += 1
-			if byteOffset > 31:
-				byteOffset = 0
-				if len(originalhexDataList[offset+1]) < 75:
-					offset += 2
-				else:
-					offset += 1
+			offset = copy.deepcopy(self.offset)
+			byteOffset = copy.deepcopy(self.byteOffset)
+			# 重新写入
+			for index in range(len(hexDataList)):
+				originalhexDataList[offset] = originalhexDataList[offset][0:9] + originalhexDataList[offset][9:9+byteOffset*2] + \
+											hexDataList[index] + originalhexDataList[offset][9+byteOffset*2 + 2:]
+				byteOffset += 1
+				if byteOffset > 31:
+					byteOffset = 0
+					if len(originalhexDataList[offset+1]) < 75: # 75代表每一数据行的字符个数
+						offset += 2
+					else:
+						offset += 1
 
 
 # 中断MO初始化表
@@ -322,11 +324,11 @@ class RoutingTable(object):
 		retList.append("0u") # dest_mo_num
 		retList.append("255u") # src_ecu_node
 		retList.append("255u") # valid_flg_index(DTC)
-		retList.append(self.signalValidDataList[index][4]) # DLC
+		retList.append(self.signalValidDataList[index][4] + 'u') # DLC
 		for i in range(5): # dest_mo
 			retList.append('0u')
 			retList.append('0u')
-		retList.append(self.signalValidDataList[index][3]) # cycle
+		retList.append(self.signalValidDataList[index][3] + 'u') # cycle
 		retList.append('0u') # msg_index
 		retList.append('0x0000u') # buf_index
 		retList.append("0u") # pre_callback
@@ -649,7 +651,7 @@ class PbMsgSendTable(HexBase):
 		self.PbMsgSendTableList = []
 		self.PB_Msg_Send_Table = []
 		self.lenType = "uint8"
-		self.structType = ["uint32", "uint16", "uint8", "uint8", "uint8", "uint8", "uint16", "uint16"] 
+		self.structType = ["uint32", "uint16", "uint8", "uint8", "uint8", "uint8", "uint16", "uint8", "uint8"] 
 		self.structLen = 14
 		self.tableLenAddr = ""
 		self.lenHexDataList = []
@@ -957,7 +959,7 @@ class PbMsgRevInitDefaultValBase(object):
 
 
 # 信号初始值
-class PbMsgRevInitVal(PbMsgRevInitDefaultValBase):
+class PbMsgRevInitVal(PbMsgRevInitDefaultValBase, HexBase):
 	"""PB_MsgRevInitVal"""
 	def __init__(self):
 		"""初始化"""
@@ -965,6 +967,14 @@ class PbMsgRevInitVal(PbMsgRevInitDefaultValBase):
 		self.validDataList = []
 		self.PbMsgRevInitValList = []
 		self.PB_MsgRevInitVal = []
+		self.lenType = "uint8"
+		self.structType = ["uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8"] 
+		self.structLen = 8
+		self.tableLenAddr = ""
+		self.lenHexDataList = []
+		self.tableAddr = "0x00c0bafa"
+		self.tableLen = 128
+		self.hexDataList = []
 
 
 	def data_handle(self):
@@ -995,7 +1005,7 @@ class PbMsgRevInitVal(PbMsgRevInitDefaultValBase):
 	def build_table(self):
 		"""创建数组表"""
 		self.PB_MsgRevInitVal.append("/*------------------table8: PB_MsgRevInitVal -----------------------------*/\n")
-		self.PB_MsgRevInitVal.append("const uint8 PB_MsgRevInitVal[MSG_REV_BUFFER_SIZE] =\n")
+		self.PB_MsgRevInitVal.append("const uint8 PB_MsgRevInitVal[MSG_REV_BUFFER_SIZE] __at(0x00c0bafa)=\n")
 		self.PB_MsgRevInitVal.append("{\n")
 		for index in range(len(self.srcSignalInfoList)):
 			self.PB_MsgRevInitVal.append("/*" + self.srcSignalInfoList[index][0] + "*/")
@@ -1005,7 +1015,7 @@ class PbMsgRevInitVal(PbMsgRevInitDefaultValBase):
 
 
 # 信号失效值
-class PbMsgRevDefaultVal(PbMsgRevInitDefaultValBase):
+class PbMsgRevDefaultVal(PbMsgRevInitDefaultValBase, HexBase):
 	"""PB_MsgRevDefaultVal"""
 	def __init__(self):
 		"""初始化"""
@@ -1013,6 +1023,14 @@ class PbMsgRevDefaultVal(PbMsgRevInitDefaultValBase):
 		self.validDataList = []
 		self.PbMsgRevDefaultVal = []
 		self.PB_MsgRevDefaultVal = []
+		self.lenType = "uint8"
+		self.structType = ["uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8"] 
+		self.structLen = 8
+		self.tableLenAddr = ""
+		self.lenHexDataList = []
+		self.tableAddr = "0x00c16c00"
+		self.tableLen = 128
+		self.hexDataList = []
 
 	def data_handle(self):
 		"""数据处理"""
@@ -1042,7 +1060,7 @@ class PbMsgRevDefaultVal(PbMsgRevInitDefaultValBase):
 	def build_table(self):
 		"""创建数组表"""
 		self.PB_MsgRevDefaultVal.append("/*------------------table9: PB_MsgRevDefaultVal -----------------------------*/\n")
-		self.PB_MsgRevDefaultVal.append("const uint8 PB_MsgRevDefaultVal[MSG_REV_BUFFER_SIZE] =\n")
+		self.PB_MsgRevDefaultVal.append("const uint8 SHUGE PB_MsgRevDefaultVal[MSG_REV_BUFFER_SIZE] __at(0x00c16c00)=\n")
 		self.PB_MsgRevDefaultVal.append("{\n")
 		for index in range(len(self.srcSignalInfoList)):
 			self.PB_MsgRevDefaultVal.append("/*" + self.srcSignalInfoList[index][0] + "*/")
