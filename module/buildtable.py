@@ -75,8 +75,8 @@ class HexBase(object):
 				self.offset = ((int(addr, 16) - int("0x00c00000", 16))//32) + 1
 
 			self.byteOffset = int(addr, 16)%32
-			print(self.offset)
-			print(self.byteOffset)
+			# print(self.offset)
+			# print(self.byteOffset)
 			# print(originalhexDataList)
 
 			offset = copy.deepcopy(self.offset)
@@ -223,6 +223,9 @@ class CanFullIdNameISR(HexBase):
 			self.CAN_FULL_ID_NAME_ISR.append('\t{')
 			self.CAN_FULL_ID_NAME_ISR.append(','.join(subList))
 			self.CAN_FULL_ID_NAME_ISR.append('},\n')
+		else:
+			if not self.CanFullIDNameISRList:
+				self.CAN_FULL_ID_NAME_ISR.append('\t0,\n')
 		self.CAN_FULL_ID_NAME_ISR.append('};')
 
 
@@ -435,6 +438,9 @@ class PbDirectRoutingTable(RoutingTable, HexBase):
 			self.PB_DirectRoutingTable.append('/*' + subList[0] + '*/' + '{')
 			self.PB_DirectRoutingTable.append(','.join(subList[1:-3]))
 			self.PB_DirectRoutingTable.append('},\n')
+		else:
+			if not self.routerTableISRList:
+				self.PB_DirectRoutingTable.append('\t0,\n')
 		self.PB_DirectRoutingTable.append("};")
 
 
@@ -474,6 +480,9 @@ class PbMsgRoutingTable(RoutingTable, HexBase):
 			self.PB_MsgRoutingTable.append('/*' + subList[0] + '*/' + '{')
 			self.PB_MsgRoutingTable.append(','.join(subList[1:-3]))
 			self.PB_MsgRoutingTable.append('},\n')
+		else:
+			if not self.routerTableFIFOList:
+				self.PB_MsgRoutingTable.append('\t0,\n')
 		self.PB_MsgRoutingTable.append("};")
 
 
@@ -541,6 +550,9 @@ class PbMsgRecvTable(HexBase):
 			self.PB_Msg_Recv_Table.append("{")
 			self.PB_Msg_Recv_Table.append(','.join(subList))
 			self.PB_Msg_Recv_Table.append("},\n")
+		else:
+			if not self.PBMsgRecvTableList:
+				self.PB_Msg_Recv_Table.append('\t0,\n')
 		self.PB_Msg_Recv_Table.append("};")
 
 
@@ -635,6 +647,9 @@ class PbSignalRoutingTable(HexBase):
 			self.PB_Signal_Routing_Table.append(','.join(self.PbSignalRoutingTableList[index]))
 			self.PB_Signal_Routing_Table.append("},")
 			self.PB_Signal_Routing_Table.append("/*" + self.validDataListList[index][column_index_from_string('A') - 1] + "*/" + "\n")
+		else:
+			if not self.PbSignalRoutingTableList:
+				self.PB_Signal_Routing_Table.append('\t0,\n')
 		self.PB_Signal_Routing_Table.append("};")
 		
 
@@ -751,6 +766,9 @@ class PbMsgSendTable(HexBase):
 			self.PB_Msg_Send_Table.append("{")
 			self.PB_Msg_Send_Table.append(','.join(subList))
 			self.PB_Msg_Send_Table.append("},\n")
+		else:
+			if not self.PbMsgSendTableList:
+				self.PB_Msg_Send_Table.append('\t0,\n')
 		self.PB_Msg_Send_Table.append("};")
 
 
@@ -870,7 +888,7 @@ class PbMsgSendSchedule(HexBase):
 			if txList not in self.txCanIdPeriodList:
 				self.txCanIdPeriodList.append(txList)
 		self.txCanIdPeriodList = sorted(self.txCanIdPeriodList, key=lambda subList:[int(subList[1]), int(subList[0], 16)])
-		print(self.txCanIdPeriodList)
+		# print(self.txCanIdPeriodList)
 		# print(len(self.txCanIdPeriodList))
 
 	def data_handle(self):
@@ -891,7 +909,7 @@ class PbMsgSendSchedule(HexBase):
 				self.PbMsgSendSchedule[index%10][(index//10)*2 + 1] = hex(index) + 'u'
 			self.PbMsgSendSchedule[index%10][(index//10)*2 + 2] = str(int(self.txCanIdPeriodList[index][1])//10) + 'u'
 
-		print(self.PbMsgSendSchedule)
+		# print(self.PbMsgSendSchedule)
 
 
 	def build_table(self):
@@ -1011,6 +1029,9 @@ class PbMsgRevInitVal(PbMsgRevInitDefaultValBase, HexBase):
 			self.PB_MsgRevInitVal.append("/*" + self.srcSignalInfoList[index][0] + "*/")
 			self.PB_MsgRevInitVal.append(','.join(self.PbMsgRevInitValList[index]))
 			self.PB_MsgRevInitVal.append(",/*" + self.srcSignalInfoList[index][1] + " 0x01*/\n")
+		else:
+			if not self.srcSignalInfoList:
+				self.PB_MsgRevInitVal.append('\t0,\n')
 		self.PB_MsgRevInitVal.append("};")
 
 
@@ -1066,6 +1087,9 @@ class PbMsgRevDefaultVal(PbMsgRevInitDefaultValBase, HexBase):
 			self.PB_MsgRevDefaultVal.append("/*" + self.srcSignalInfoList[index][0] + "*/")
 			self.PB_MsgRevDefaultVal.append(','.join(self.PbMsgRevDefaultVal[index]))
 			self.PB_MsgRevDefaultVal.append(",/*" + self.srcSignalInfoList[index][1] + " 0x01*/\n")
+		else:
+			if not self.srcSignalInfoList:
+				self.PB_MsgRevDefaultVal.append('\t0,\n')
 		self.PB_MsgRevDefaultVal.append("};")
 
 

@@ -10,12 +10,14 @@ class RouterTable(object):
 	def get_file_pathname(self):
 		"""获取路由表路径"""
 		self.pathName = askopenfilename(filetypes = [("Excel",".csv")])
-		print(self.pathName)
-		print(type(self.pathName))
+		if self.pathName == ():
+			self.pathName = ""
+		# print(self.pathName)
+		# print(type(self.pathName))
 
 	def read_data(self, row:str):
 		"""从路由表中读取数据"""
-		if self.pathName != "" and self.pathName != ():
+		if self.pathName != "":
 			dataFrame = pandas.read_csv(self.pathName, header=None, na_values="", usecols=[i for i in range(column_index_from_string(row))])
 			self.dataList = dataFrame.fillna("None").values[1:].tolist()
 
@@ -55,10 +57,13 @@ class ReadHex(object):
 	def get_file_pathname(self):
 		"""获取路由表路径"""
 		self.pathName = askopenfilename(filetypes = [("hex",".hex")])
+		if self.pathName == ():
+			self.pathName = ""
+		# print(self.pathName) 
 
 	def read_hex(self):
 		"""读取hex"""
-		if self.pathName != "" and self.pathName != ():
+		if self.pathName != "":
 			with open(self.pathName, "r") as hexf:
 				for colData in hexf:
 					self.hexData.append(colData)

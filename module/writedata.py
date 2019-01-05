@@ -69,12 +69,13 @@ class WriteData(object):
 
 	def write_hex(self, dataList):
 		"""写hex文件"""
-		self.checksum(dataList)
-		with open("output/kanwairen.hex",'w') as hexf:
-			for tmp in dataList:
-				hexf.write(tmp[0:-1])
-				hexf.write("\r\n")
-				# hexf.write(tmp)
+		if dataList != []:
+			self.checksum(dataList)
+			with open("output/kanwairen.hex",'w') as hexf:
+				for tmp in dataList:
+					hexf.write(tmp[0:-1])
+					hexf.write("\r\n")
+					# hexf.write(tmp)
 
 
 

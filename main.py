@@ -1,36 +1,19 @@
-import pandas
-
-from tkinter.filedialog import askopenfilename
-from openpyxl.utils import get_column_letter, column_index_from_string
-
 from module import readdata
 from module import buildtable
 from module import writedata
+from ui import ui
 from header import id2indextableheader
 from header import projcancfgheader
 from header import projpostbuildcfgheader
 
 
-def main():
-	# 创建普通报文对象
-	msgRoute = readdata.MsgRoute()
-	msgRoute.get_file_pathname()
+def run(msgRoute, signalRoute, readHex):
+	# 读取数据
 	msgRoute.read_data("O")
-
-	# 创建信号报文对象
-	signalRoute = readdata.SignalRoute()
-	signalRoute.get_file_pathname()
 	signalRoute.read_data("T")
-
-	# 创建写文件对象
-	writeData = writedata.WriteData()
-
-	# 创建一个读hex对象
-	readHex = readdata.ReadHex()
-	readHex.get_file_pathname()
 	readHex.read_hex()
 
-	# # 中断MO初始化表
+	# 中断MO初始化表
 	canFullIdNameISR = buildtable.CanFullIdNameISR()
 	canFullIdNameISR.get_valid_data(msgRoute, signalRoute)
 	canFullIdNameISR.data_handle()
@@ -133,7 +116,10 @@ def main():
 	id2IndexTable.modify_hex_data(readHex.hexData, id2IndexTable.tableAddrE, id2IndexTable.structLen*id2IndexTable.tableLen, id2IndexTable.hexDataList)
 	id2IndexTable.build_hex_data([id2IndexTable.id2IndexTableF])
 	id2IndexTable.modify_hex_data(readHex.hexData, id2IndexTable.tableAddrF, id2IndexTable.structLen*id2IndexTable.tableLen, id2IndexTable.hexDataList)
-	
+
+
+	# 创建写文件对象
+	writeData = writedata.WriteData()	
 
 	# 写入Table.c文件
 	writeData.write_table_c(canFullIdNameISR.CAN_FULL_ID_NAME_ISR)
@@ -182,10 +168,41 @@ def main():
 	writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_f)
 
 
-	# writeData.write_hex(readHex.hexData)
+	writeData.write_hex(readHex.hexData)
 	
 
 	print("------------------END-------------------")
 
+
+def ui_main():
+	# 创建普通报文对象
+	msgRoute = readdata.MsgRoute()
+	# 创建信号报文对象
+	signalRoute = readdata.SignalRoute()
+	# 创建一个读hex对象
+	readHex = readdata.ReadHex()
+	# 创建一个界面类
+	my_main_window = ui.MyWindow(msgRoute, signalRoute, readHex, run)
+	my_main_window.setup()
+	my_main_window.show()
+
+
+def main():
+	# 创建普通报文对象
+	msgRoute = readdata.MsgRoute()
+	msgRoute.get_file_pathname()
+
+	# 创建信号报文对象
+	signalRoute = readdata.SignalRoute()
+	signalRoute.get_file_pathname()
+
+	# 创建一个读hex对象
+	readHex = readdata.ReadHex()
+	readHex.get_file_pathname()
+
+	run(msgRoute, signalRoute, readHex)
+
+
 if __name__ == '__main__':
-	main()
+	# main()
+	ui_main()
