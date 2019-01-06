@@ -2,6 +2,7 @@ from module import readdata
 from module import buildtable
 from module import writedata
 from ui import ui
+from register import register
 from header import id2indextableheader
 from header import projcancfgheader
 from header import projpostbuildcfgheader
@@ -174,20 +175,29 @@ def run(msgRoute, signalRoute, readHex):
 	print("------------------END-------------------")
 
 
-def ui_main():
+def ui_main_client():
+	"""客户版"""
+	pass
+
+def ui_main_develop():
+	'''开发版'''
 	# 创建普通报文对象
 	msgRoute = readdata.MsgRoute()
 	# 创建信号报文对象
 	signalRoute = readdata.SignalRoute()
 	# 创建一个读hex对象
 	readHex = readdata.ReadHex()
+	# 创建一个校验是否注册类
+	reg = register.Register()
 	# 创建一个界面类
-	my_main_window = ui.MyWindow(msgRoute, signalRoute, readHex, run)
+	my_main_window = ui.MyWindow(msgRoute, signalRoute, readHex, reg, run)
+	# 初始会主界面参数
 	my_main_window.setup()
+	# 主界面显示
 	my_main_window.show()
 
 
-def main():
+def cmd_main():
 	# 创建普通报文对象
 	msgRoute = readdata.MsgRoute()
 	msgRoute.get_file_pathname()
@@ -204,5 +214,5 @@ def main():
 
 
 if __name__ == '__main__':
-	# main()
-	ui_main()
+	# cmd_main()
+	ui_main_develop()

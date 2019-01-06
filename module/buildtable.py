@@ -224,6 +224,7 @@ class CanFullIdNameISR(HexBase):
 			self.CAN_FULL_ID_NAME_ISR.append(','.join(subList))
 			self.CAN_FULL_ID_NAME_ISR.append('},\n')
 		else:
+			# 如果列表为空，则以0，填充数组，以防工程编译时不通过.
 			if not self.CanFullIDNameISRList:
 				self.CAN_FULL_ID_NAME_ISR.append('\t0,\n')
 		self.CAN_FULL_ID_NAME_ISR.append('};')
@@ -439,6 +440,7 @@ class PbDirectRoutingTable(RoutingTable, HexBase):
 			self.PB_DirectRoutingTable.append(','.join(subList[1:-3]))
 			self.PB_DirectRoutingTable.append('},\n')
 		else:
+			# 如果列表为空，则以0，填充数组，以防工程编译时不通过.
 			if not self.routerTableISRList:
 				self.PB_DirectRoutingTable.append('\t0,\n')
 		self.PB_DirectRoutingTable.append("};")
@@ -481,6 +483,7 @@ class PbMsgRoutingTable(RoutingTable, HexBase):
 			self.PB_MsgRoutingTable.append(','.join(subList[1:-3]))
 			self.PB_MsgRoutingTable.append('},\n')
 		else:
+			# 如果列表为空，则以0，填充数组，以防工程编译时不通过.
 			if not self.routerTableFIFOList:
 				self.PB_MsgRoutingTable.append('\t0,\n')
 		self.PB_MsgRoutingTable.append("};")
@@ -551,6 +554,7 @@ class PbMsgRecvTable(HexBase):
 			self.PB_Msg_Recv_Table.append(','.join(subList))
 			self.PB_Msg_Recv_Table.append("},\n")
 		else:
+			# 如果列表为空，则以0，填充数组，以防工程编译时不通过.
 			if not self.PBMsgRecvTableList:
 				self.PB_Msg_Recv_Table.append('\t0,\n')
 		self.PB_Msg_Recv_Table.append("};")
@@ -648,6 +652,7 @@ class PbSignalRoutingTable(HexBase):
 			self.PB_Signal_Routing_Table.append("},")
 			self.PB_Signal_Routing_Table.append("/*" + self.validDataListList[index][column_index_from_string('A') - 1] + "*/" + "\n")
 		else:
+			# 如果列表为空，则以0，填充数组，以防工程编译时不通过.
 			if not self.PbSignalRoutingTableList:
 				self.PB_Signal_Routing_Table.append('\t0,\n')
 		self.PB_Signal_Routing_Table.append("};")
@@ -767,6 +772,7 @@ class PbMsgSendTable(HexBase):
 			self.PB_Msg_Send_Table.append(','.join(subList))
 			self.PB_Msg_Send_Table.append("},\n")
 		else:
+			# 如果列表为空，则以0，填充数组，以防工程编译时不通过.
 			if not self.PbMsgSendTableList:
 				self.PB_Msg_Send_Table.append('\t0,\n')
 		self.PB_Msg_Send_Table.append("};")
@@ -1030,6 +1036,7 @@ class PbMsgRevInitVal(PbMsgRevInitDefaultValBase, HexBase):
 			self.PB_MsgRevInitVal.append(','.join(self.PbMsgRevInitValList[index]))
 			self.PB_MsgRevInitVal.append(",/*" + self.srcSignalInfoList[index][1] + " 0x01*/\n")
 		else:
+			# 如果列表为空，则以0，填充数组，以防工程编译时不通过.
 			if not self.srcSignalInfoList:
 				self.PB_MsgRevInitVal.append('\t0,\n')
 		self.PB_MsgRevInitVal.append("};")
@@ -1088,6 +1095,7 @@ class PbMsgRevDefaultVal(PbMsgRevInitDefaultValBase, HexBase):
 			self.PB_MsgRevDefaultVal.append(','.join(self.PbMsgRevDefaultVal[index]))
 			self.PB_MsgRevDefaultVal.append(",/*" + self.srcSignalInfoList[index][1] + " 0x01*/\n")
 		else:
+			# 如果列表为空，则以0，填充数组，以防工程编译时不通过.
 			if not self.srcSignalInfoList:
 				self.PB_MsgRevDefaultVal.append('\t0,\n')
 		self.PB_MsgRevDefaultVal.append("};")
