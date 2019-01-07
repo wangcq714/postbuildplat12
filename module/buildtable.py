@@ -147,14 +147,14 @@ class CanFullIdNameISR(HexBase):
 					self.msgDesChListISR[len(self.msgValidDataListISR) - 1].append(MsgDesCh)
 				else:
 					self.msgDesChListISR[len(self.msgValidDataListISR) - 1].append(MsgDesCh)
-		print(self.msgValidDataListISR)
-		print(self.msgDesChListISR)
+		# print(self.msgValidDataListISR)
+		# print(self.msgDesChListISR)
 
 		# 对普通报文信息和报文目标通道按ID大小进行排序
 		self.msgValidDataListISR = sorted(self.msgValidDataListISR, key=lambda subList:[int(subList[column_index_from_string('C') - 2], 16), int(subList[column_index_from_string('K') - 3])])
 		self.msgDesChListISR = sorted(self.msgDesChListISR, key=lambda subList:[int(subList[0][column_index_from_string('C') - 2], 16), int(subList[0][column_index_from_string('K') - 3])])
-		print(self.msgValidDataListISR)
-		print(self.msgDesChListISR)
+		# print(self.msgValidDataListISR)
+		# print(self.msgDesChListISR)
 		# 轮询信号报文数据
 		for subList in signalDataList:
 			pass
