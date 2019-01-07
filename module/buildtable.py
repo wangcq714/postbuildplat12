@@ -147,11 +147,14 @@ class CanFullIdNameISR(HexBase):
 					self.msgDesChListISR[len(self.msgValidDataListISR) - 1].append(MsgDesCh)
 				else:
 					self.msgDesChListISR[len(self.msgValidDataListISR) - 1].append(MsgDesCh)
+		print(self.msgValidDataListISR)
+		print(self.msgDesChListISR)
 
 		# 对普通报文信息和报文目标通道按ID大小进行排序
-		self.msgValidDataListISR = sorted(self.msgValidDataListISR, key=lambda subList:int(subList[column_index_from_string('C') - 2], 16))
-		self.msgDesChListISR = sorted(self.msgDesChListISR, key=lambda subList:int(subList[0][column_index_from_string('C') - 2], 16))
-
+		self.msgValidDataListISR = sorted(self.msgValidDataListISR, key=lambda subList:[int(subList[column_index_from_string('C') - 2], 16), int(subList[column_index_from_string('K') - 3])])
+		self.msgDesChListISR = sorted(self.msgDesChListISR, key=lambda subList:[int(subList[0][column_index_from_string('C') - 2], 16), int(subList[0][column_index_from_string('K') - 3])])
+		print(self.msgValidDataListISR)
+		print(self.msgDesChListISR)
 		# 轮询信号报文数据
 		for subList in signalDataList:
 			pass
@@ -245,28 +248,32 @@ class RoutingTable(object):
 			if subList not in self.msgValidDataList:
 				self.msgValidDataList.append(subList)
 				self.msgDesChList.append([subList[column_index_from_string('C') - 2]])
-				self.msgDesChList[len(self.msgValidDataList) - 1].append(MsgDesCh)
+				if MsgDesCh != '0':
+					self.msgDesChList[len(self.msgValidDataList) - 1].append(MsgDesCh)
 				if subList[column_index_from_string('M') - 3] == "0":
 					pass
 					# self.msgDesChList[len(self.msgValidDataList) - 1].append(MsgDesCh)
 				else:
 					self.msgValidDataListISR.append(subList)
 					self.msgDesChListISR.append([subList])
-					self.msgDesChListISR[len(self.msgValidDataListISR) - 1].append(MsgDesCh)
+					if MsgDesCh != '0':
+						self.msgDesChListISR[len(self.msgValidDataListISR) - 1].append(MsgDesCh)
 
 			else:
-				self.msgDesChList[self.msgValidDataList.index(subList)].append(MsgDesCh)
+				if MsgDesCh != '0':
+					self.msgDesChList[self.msgValidDataList.index(subList)].append(MsgDesCh)
 				if subList[column_index_from_string('M') - 3] == "0":
 					pass
 					# self.msgDesChList[self.msgValidDataList.index(subList)].append(MsgDesCh)
 				else:
-					self.msgDesChListISR[len(self.msgValidDataListISR) - 1].append(MsgDesCh)
+					if MsgDesCh != '0':
+						self.msgDesChListISR[len(self.msgValidDataListISR) - 1].append(MsgDesCh)
 		# print(self.msgValidDataList)
 		# print(self.msgDesChList)
 		# print(len(self.msgValidDataList))
 		# print(len(self.msgDesChList))
-		self.msgValidDataListISR = sorted(self.msgValidDataListISR, key=lambda subList:int(subList[column_index_from_string('C') - 2], 16))
-		self.msgDesChListISR = sorted(self.msgDesChListISR, key=lambda subList:int(subList[0][column_index_from_string('C') - 2], 16))
+		self.msgValidDataListISR = sorted(self.msgValidDataListISR, key=lambda subList:[int(subList[column_index_from_string('C') - 2], 16), int(subList[column_index_from_string('K') - 3])])
+		self.msgDesChListISR = sorted(self.msgDesChListISR, key=lambda subList:[int(subList[0][column_index_from_string('C') - 2], 16), int(subList[0][column_index_from_string('K') - 3])])
 		# for i in range(len(self.msgDesChListISR)):
 		# 	self.msgDesChListISR[]
 		# print(self.msgValidDataListISR)
@@ -362,7 +369,7 @@ class RoutingTable(object):
 		# print(len(self.routerTableList))
 
 		# 将所有报文按ID大小排序
-		self.routerTableList = sorted(self.routerTableList, key=lambda subList: int(subList[0], 16))
+		self.routerTableList = sorted(self.routerTableList, key=lambda subList: [int(subList[0], 16), int(subList[-1])])
 		# print(self.routerTableList)
 		# print(len(self.routerTableList))
 		
@@ -1162,22 +1169,22 @@ class Id2IndexTable(RoutingTable, HexBase):
 
 		# 将ID单独提取出来，用于后面获取索引
 		for subList in self.routerTableFIFOList:
-			self.idList.append(subList[0])
+			self.idList.append((subList[0], subList[-1]))
 
 		# 轮询所有轮询发送的报文，获得索引值
 		for subList in self.routerTableFIFOList:
 			if subList[-1] == '1':
-				self.id2IndexTableA[int(subList[0], 16)] = "0x{0:04X}u".format(self.idList.index(subList[0]))
+				self.id2IndexTableA[int(subList[0], 16)] = "0x{0:04X}u".format(self.idList.index((subList[0], subList[-1])))
 			elif subList[-1] == '2':
-				self.id2IndexTableB[int(subList[0], 16)] = "0x{0:04X}u".format(self.idList.index(subList[0]))
+				self.id2IndexTableB[int(subList[0], 16)] = "0x{0:04X}u".format(self.idList.index((subList[0], subList[-1])))
 			elif subList[-1] == '3':
-				self.id2IndexTableC[int(subList[0], 16)] = "0x{0:04X}u".format(self.idList.index(subList[0]))
+				self.id2IndexTableC[int(subList[0], 16)] = "0x{0:04X}u".format(self.idList.index((subList[0], subList[-1])))
 			elif subList[-1] == '4':
-				self.id2IndexTableD[int(subList[0], 16)] = "0x{0:04X}u".format(self.idList.index(subList[0]))
+				self.id2IndexTableD[int(subList[0], 16)] = "0x{0:04X}u".format(self.idList.index((subList[0], subList[-1])))
 			elif subList[-1] == '5':
-				self.id2IndexTableE[int(subList[0], 16)] = "0x{0:04X}u".format(self.idList.index(subList[0]))
+				self.id2IndexTableE[int(subList[0], 16)] = "0x{0:04X}u".format(self.idList.index((subList[0], subList[-1])))
 			elif subList[-1] == '6':
-				self.id2IndexTableF[int(subList[0], 16)] = "0x{0:04X}u".format(self.idList.index(subList[0]))
+				self.id2IndexTableF[int(subList[0], 16)] = "0x{0:04X}u".format(self.idList.index((subList[0], subList[-1])))
 
 		# print(self.id2IndexTableA)
 		# print(self.id2IndexTableB)
