@@ -174,7 +174,6 @@ def run(msgRoute, signalRoute, readHex):
 
 	print("------------------END-------------------")
 
-
 def ui_main_client():
 	"""客户版"""
 	pass
@@ -195,7 +194,6 @@ def ui_main_develop():
 	my_main_window.setup()
 	# 主界面显示
 	my_main_window.show()
-
 
 def cmd_main():
 	# 创建普通报文对象

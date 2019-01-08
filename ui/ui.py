@@ -1,5 +1,6 @@
-from tkinter import *
+from tkinter import Tk, Toplevel, Label, Button, StringVar, Entry, W
 from tkinter import messagebox
+from ui import tool_interface
 
 class MainWindow(object):
 	"""UI类"""
@@ -43,19 +44,19 @@ class MainWindow(object):
 		# 运行
 		self.run = Button(self.window, text="运行", bg="lightgreen", activebackground="gold", \
 							fg="black", activeforeground="black", font=("楷体", 9), width=12, height=2, command=self.run)
-		self.run.place(x=50, y=200)
+		self.run.place(x=90, y=200)
 		# 退出
 		self.exit = Button(self.window, text="退出", bg="lightgreen", activebackground="gold", \
 							fg="black", activeforeground="black", font=("楷体", 9), width=12, height=2, command=self.exit)
-		self.exit.place(x=170, y=200)
+		self.exit.place(x=220, y=200)
 		# 帮助
 		self.help = Button(self.window, text="帮助", bg="lightgreen", activebackground="gold", \
 							fg="black", activeforeground="black", font=("楷体", 9), width=12, height=2, command=self.help)
-		self.help.place(x=290, y=200)
-		# 帮助
-		self.help = Button(self.window, text="魔法", bg="lightgreen", activebackground="gold", \
-							fg="black", activeforeground="black", font=("楷体", 9), width=12, height=2, command=self.help)
-		self.help.place(x=410, y=200)
+		self.help.place(x=350, y=200)
+		# 百宝箱
+		self.help = Button(self.window, text="百宝箱", bg="lightgreen", activebackground="gold", \
+							fg="black", activeforeground="black", font=("楷体", 8), width=8, height=2, command=self.box)
+		self.help.place(x=460, y=201)
 
 
 	def show(self):
@@ -68,34 +69,34 @@ class RegWindow(object):
 	def regwin_setup(self):
 		self.reg_window = Toplevel()
 		self.reg_window.title('注册')
-		self.reg_window.geometry('500x200')
+		self.reg_window.geometry('450x200')
 		self.reg_window.resizable(width=False, height=False) #宽不可变, 高可变, 默认为True
 
 		# 注册码输入
-		Label(self.reg_window, text="输入注册码:", font=("Arial", 10), width=13, height=3).place(x=10, y=20)
+		Label(self.reg_window, text="注册码:", font=("楷体", 10), width=13, height=3).place(x=10, y=100)
 		self.reg_code = StringVar()
-		self.regist_code_input = Entry(self.reg_window, textvariable=self.reg_code, bg="white", font=("Arial", 10), width=50)
+		self.regist_code_input = Entry(self.reg_window, textvariable=self.reg_code, bg="white", font=("Times", 10), width=50)
 		# self.reg_code.set("haha")
-		self.regist_code_input.place(x=100, y=33)
+		self.regist_code_input.place(x=100, y=113)
 
-		Label(self.reg_window, text="（请将下方显示的机器码发送至 wangcq714@163.com 获取注册码）", font=("Arial", 10), width=58, height=2).place(x=10, y=60)
+		Label(self.reg_window, text="（请将机器码发送至 wangcq714@163.com 获取注册码）", font=("楷体", 10), width=58, height=2).place(x=10, y=60)
 
 		# 机器码显示
-		Label(self.reg_window, text="机器码显示:", font=("Arial", 10), width=13, height=3).place(x=10, y=100)
+		Label(self.reg_window, text="机器码:", font=("楷体", 10), width=13, height=3).place(x=10, y=20)
 		self.mac_code = StringVar()
-		self.machine_code_display = Entry(self.reg_window, textvariable=self.mac_code, state="readonly", bg="white", font=("Arial", 10), width=50)
+		self.machine_code_display = Entry(self.reg_window, textvariable=self.mac_code, state="readonly", bg="white", font=("Times", 10), width=50)
 		# self.mac_code.set("jiqima")
 		self.mac_code_display()
-		self.machine_code_display.place(x=100, y=113)
+		self.machine_code_display.place(x=100, y=33)
 		
 		# 确定
 		self.confirm = Button(self.reg_window, text="注册", bg="lightgreen", activebackground="gold", \
-							fg="black", activeforeground="black", font=("Arial", 8), width=8, height=1, command=self.regwin_regit)
-		self.confirm.place(x=150, y=150)
+							fg="black", activeforeground="black", font=("楷体", 9), width=8, height=1, command=self.regwin_regit)
+		self.confirm.place(x=150, y=155)
 		# 返回
 		self.back = Button(self.reg_window, text="返回", bg="lightgreen", activebackground="gold", \
-							fg="black", activeforeground="black", font=("Arial", 8), width=8, height=1, command=self.regwin_back)
-		self.back.place(x=300, y=150)
+							fg="black", activeforeground="black", font=("楷体", 9), width=8, height=1, command=self.regwin_back)
+		self.back.place(x=270, y=155)
 
 
 class MyWindow(MainWindow, RegWindow):
@@ -122,6 +123,12 @@ class MyWindow(MainWindow, RegWindow):
 		ret = messagebox.askquestion(title='Help', message='这么简单还需要帮助？！！！')
 		if ret == "yes":
 			messagebox.showinfo(title='Help', message='哈哈哈 逗你呢 并没有什么帮助')
+
+	def box(self):
+		'''主界面百宝箱按钮回调函数'''
+		tool_if = tool_interface.BoxWindow()
+		tool_if.boxwin_setup()
+
 
 	def select_msgtable(self):
 		'''主界面选择报文表按钮回调函数'''

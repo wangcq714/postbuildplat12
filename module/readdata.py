@@ -1,4 +1,5 @@
-import pandas
+# import pandas
+from pandas import read_csv
 
 from tkinter.filedialog import askopenfilename
 from openpyxl.utils import get_column_letter, column_index_from_string
@@ -18,7 +19,7 @@ class RouterTable(object):
 	def read_data(self, row:str):
 		"""从路由表中读取数据"""
 		if self.pathName != "":
-			dataFrame = pandas.read_csv(self.pathName, header=None, na_values="", usecols=[i for i in range(column_index_from_string(row))])
+			dataFrame = read_csv(self.pathName, header=None, na_values="", usecols=[i for i in range(column_index_from_string(row))])
 			self.dataList = dataFrame.fillna("None").values[1:].tolist()
 
 

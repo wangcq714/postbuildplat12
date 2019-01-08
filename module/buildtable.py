@@ -1,4 +1,5 @@
-import copy
+# import copy
+from copy import deepcopy
 from openpyxl.utils import get_column_letter, column_index_from_string
 
 
@@ -79,8 +80,8 @@ class HexBase(object):
 			# print(self.byteOffset)
 			# print(originalhexDataList)
 
-			offset = copy.deepcopy(self.offset)
-			byteOffset = copy.deepcopy(self.byteOffset)
+			offset = deepcopy(self.offset)
+			byteOffset = deepcopy(self.byteOffset)
 			# 清零				
 			for index in range(dataLen):
 				originalhexDataList[offset] = originalhexDataList[offset][0:9] + originalhexDataList[offset][9:9+byteOffset*2] + \
@@ -93,8 +94,8 @@ class HexBase(object):
 					else:
 						offset += 1
 
-			offset = copy.deepcopy(self.offset)
-			byteOffset = copy.deepcopy(self.byteOffset)
+			offset = deepcopy(self.offset)
+			byteOffset = deepcopy(self.byteOffset)
 			# 重新写入
 			for index in range(len(hexDataList)):
 				originalhexDataList[offset] = originalhexDataList[offset][0:9] + originalhexDataList[offset][9:9+byteOffset*2] + \
@@ -131,8 +132,8 @@ class CanFullIdNameISR(HexBase):
 	def get_valid_data(self, msgRoute, signalRoute):
 		"""获取有效数据"""
 		# 深拷贝一份路由数据，不破坏原有数据
-		msgDataList = copy.deepcopy(msgRoute.dataList)
-		signalDataList = copy.deepcopy(signalRoute.dataList)
+		msgDataList = deepcopy(msgRoute.dataList)
+		signalDataList = deepcopy(signalRoute.dataList)
 		# 轮询普通报文数据
 		for subList in msgDataList:
 			# 判断子列表是否为中断报文数据
@@ -144,9 +145,11 @@ class CanFullIdNameISR(HexBase):
 				if subList not in self.msgValidDataListISR:
 					self.msgValidDataListISR.append(subList)
 					self.msgDesChListISR.append([subList])
-					self.msgDesChListISR[len(self.msgValidDataListISR) - 1].append(MsgDesCh)
+					if MsgDesCh != '0':
+						self.msgDesChListISR[len(self.msgValidDataListISR) - 1].append(MsgDesCh)
 				else:
-					self.msgDesChListISR[len(self.msgValidDataListISR) - 1].append(MsgDesCh)
+					if MsgDesCh != '0':
+						self.msgDesChListISR[len(self.msgValidDataListISR) - 1].append(MsgDesCh)
 		# print(self.msgValidDataListISR)
 		# print(self.msgDesChListISR)
 
@@ -239,8 +242,8 @@ class RoutingTable(object):
 	def get_valid_data(self, msgRoute, signalRoute):
 		"""获取有效数据"""
 		# 深拷贝一份路由数据，不破坏原有数据
-		msgDataList = copy.deepcopy(msgRoute.dataList)
-		signalDataList = copy.deepcopy(signalRoute.dataList)
+		msgDataList = deepcopy(msgRoute.dataList)
+		signalDataList = deepcopy(signalRoute.dataList)
 
 		for subList in msgDataList:
 			num = subList.pop(column_index_from_string('A') - 1)
@@ -516,7 +519,7 @@ class PbMsgRecvTable(HexBase):
 	def get_valid_data(self, signalRoute):
 		"""获取有效数据"""
 		# 深拷贝一份路由数据，不破坏原有数据
-		signalDataList = copy.deepcopy(signalRoute.dataList)
+		signalDataList = deepcopy(signalRoute.dataList)
 		for subList in signalDataList:
 			tmpList = [subList[column_index_from_string('J') - 1],
 					   subList[column_index_from_string('K') - 1],
@@ -589,7 +592,7 @@ class PbSignalRoutingTable(HexBase):
 	def get_valid_data(self, signalRoute):
 		"""获取有效数据"""
 		# 深拷贝一份路由数据，不破坏原有数据
-		signalDataList = copy.deepcopy(signalRoute.dataList)
+		signalDataList = deepcopy(signalRoute.dataList)
 
 		# 首先获取发送信号ID，并以ID大小进行排序
 		for subList in signalDataList:
@@ -689,7 +692,7 @@ class PbMsgSendTable(HexBase):
 	def get_valid_data(self, signalRoute):
 		"""获取有效数据"""
 		# 深拷贝一份路由数据，不破坏原有数据
-		signalDataList = copy.deepcopy(signalRoute.dataList)
+		signalDataList = deepcopy(signalRoute.dataList)
 
 		# 获取发送信号ID，并以ID大小进行排序
 		for subList in signalDataList:
@@ -799,7 +802,7 @@ class PbMsgSrcTable(object):
 	def get_valid_data(self, signalRoute):
 		"""获取有效数据"""
 		# 深拷贝一份路由数据，不破坏原有数据
-		signalDataList = copy.deepcopy(signalRoute.dataList)
+		signalDataList = deepcopy(signalRoute.dataList)
 
 		# 获取发送信号数据，先以周期进行排序的基础上以ID大小进行排序
 		for subList in signalDataList:
@@ -892,7 +895,7 @@ class PbMsgSendSchedule(HexBase):
 	def get_valid_data(self, signalRoute):
 		"""获取有效数据"""
 		# 深拷贝一份路由数据，不破坏原有数据
-		signalDataList = copy.deepcopy(signalRoute.dataList)
+		signalDataList = deepcopy(signalRoute.dataList)
 
 		# 获取发送信号数据，先以周期进行排序的基础上以ID大小进行排序
 		for subList in signalDataList:
@@ -953,7 +956,7 @@ class PbMsgRevInitDefaultValBase(object):
 	def get_valid_data(self, signalRoute):
 		"""获取有效数据"""
 		# 深拷贝一份路由数据，不破坏原有数据
-		signalDataList = copy.deepcopy(signalRoute.dataList)
+		signalDataList = deepcopy(signalRoute.dataList)
 
 		for subList in signalDataList:
 			tmpList = [subList[column_index_from_string('J') - 1],

@@ -1,9 +1,13 @@
-import platform
-import ctypes
-import base64
-from pyDes import *
+# import platform
+from platform import system
+# import ctypes
+from ctypes import cdll, create_string_buffer
+# import base64
+from base64 import b64encode
+from pyDes import des, CBC, PAD_PKCS5
 
-if platform.system() == "Windows":
+
+if system() == "Windows":
     import wmi
     import json
 
@@ -13,13 +17,13 @@ class Register(object):
         self.Des_Key = "Wang+-*%" # Key
         self.Des_IV = b"\x19\x90\x07\x14\x06\x12\x08\x23" # 自定IV向量
         self.authored_result = False
-        if platform.system() == "Windows":
+        if system() == "Windows":
             self.wm = wmi.WMI()
 
     
     # cpu 序列号
     def get_CPU_info(self):
-        if platform.system() == "Windows":
+        if system() == "Windows":
             cpu = []
             cp = self.wm.Win32_Processor()
             for u in cp:
@@ -33,12 +37,12 @@ class Register(object):
             # print(":::CPU info:", json.dumps(cpu))
             # print(cpu[0]["Serial Number"])
             return cpu[0]["Serial Number"]
-        elif platform.system() == "Linux":
+        elif system() == "Linux":
             return ""
 
     # 硬盘序列号  
     def get_disk_info(self):
-        if platform.system() == "Windows":
+        if system() == "Windows":
             disk = []
             for pd in self.wm.Win32_DiskDrive():
                 disk.append(
@@ -52,14 +56,14 @@ class Register(object):
             # print(":::Disk info:", json.dumps(disk))
             # print(disk[0]["Serial"])
             return disk[0]["Serial"]
-        elif platform.system() == "Linux":
+        elif system() == "Linux":
             #调用库
-            ll = ctypes.cdll.LoadLibrary
+            ll = cdll.LoadLibrary
             if __name__ != '__main__':
-                lib = ctypes.cdll.LoadLibrary("./register/libpycalldiskinfo.so")  #调用so
+                lib = cdll.LoadLibrary("./register/libpycalldiskinfo.so")  #调用so
             else:
-                lib = ctypes.cdll.LoadLibrary("./libpycalldiskinfo.so")  #调用so
-            hardseri=ctypes.create_string_buffer(19) #申请出参的内存大小
+                lib = cdll.LoadLibrary("./libpycalldiskinfo.so")  #调用so
+            hardseri = create_string_buffer(19) #申请出参的内存大小
             lib.get_disk_serial_no(hardseri)
             # print (hardseri.raw)    #出参的访问方式
             disk_info = str(hardseri.raw, encoding = "utf-8")
@@ -69,7 +73,7 @@ class Register(object):
 
     # mac 地址（包括虚拟机的）
     def get_network_info(self):
-        if platform.system() == "Windows":
+        if system() == "Windows":
             network = []
             for nw in self.wm.Win32_NetworkAdapterConfiguration ():  # IPEnabled=0
                 if nw.MACAddress != None:
@@ -82,18 +86,18 @@ class Register(object):
             # print(":::Network info:", json.dumps(network))
             # print(network[0]["MAC"])
             return network[0]["MAC"]
-        elif platform.system() == "Linux":
+        elif system() == "Linux":
             return ""
 
     # 主板序列号
     def get_mainboard_info(self):
-        if platform.system() == "Windows":
+        if system() == "Windows":
             mainboard=[]
             for board_id in self.wm.Win32_BaseBoard ():
                 mainboard.append(board_id.SerialNumber.strip().strip('.'))
             # print(mainboard[0])
             return mainboard[0]   
-        elif platform.system() == "Linux":
+        elif system() == "Linux":
             return "" 
    
     # 获得机器码
@@ -117,8 +121,8 @@ class Register(object):
     def Encrypted(self,tr):
         k = des(self.Des_Key, CBC, self.Des_IV, pad=None, padmode=PAD_PKCS5)
         EncryptStr = k.encrypt(tr)
-        # print('注册码：',base64.b64encode(EncryptStr))
-        return base64.b64encode(EncryptStr) #转base64编码返回
+        # print('注册码：', b64encode(EncryptStr))
+        return b64encode(EncryptStr) #转base64编码返回
 
 
     #获取注册码，验证成功后生成注册文件
