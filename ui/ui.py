@@ -98,6 +98,11 @@ class RegWindow(object):
 							fg="black", activeforeground="black", font=("楷体", 9), width=8, height=1, command=self.regwin_back)
 		self.back.place(x=270, y=155)
 
+	def close_win_callback(self):
+		'''点击X关闭窗口回调函数'''
+		self.reg_window.destroy()
+		del(self.reg_window)
+
 
 class MyWindow(MainWindow, RegWindow):
 	"""UI"""
@@ -126,8 +131,12 @@ class MyWindow(MainWindow, RegWindow):
 
 	def box(self):
 		'''主界面百宝箱按钮回调函数'''
-		tool_if = tool_interface.BoxWindow()
-		tool_if.boxwin_setup()
+		if not hasattr(self, "tool_if"):
+			self.tool_if = tool_interface.BoxWindow(self)
+			self.tool_if.boxwin_setup()
+			self.tool_if.box_window.protocol("WM_DELETE_WINDOW", self.tool_if.close_win_callback)
+		else:
+			messagebox.showinfo(title='Help', message='百宝箱已打开！')
 
 
 	def select_msgtable(self):
@@ -172,6 +181,7 @@ class MyWindow(MainWindow, RegWindow):
 						messagebox.showinfo(title='提示', message='注册窗口已打开，请勿重复操作！')
 					else:
 						self.regwin_setup()
+						self.reg_window.protocol("WM_DELETE_WINDOW", self.close_win_callback)
 				except AttributeError:
 					pass
 
