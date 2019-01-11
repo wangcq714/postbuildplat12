@@ -5,9 +5,10 @@ from tool import sig2pbsig
 
 class BoxWindow(object):
 	'''工具窗口'''
-	def __init__(self):
+	def __init__(self, main_window):
 		'''初始化'''
 		self.box_window = Toplevel()
+		self.main_window = main_window
 
 	def boxwin_setup(self):
 		self.box_window.title("Tool")
@@ -66,6 +67,11 @@ class BoxWindow(object):
 		# 					fg="black", activeforeground="black", font=("楷体", 9), width=12, height=2)
 		# self.help.place(x=350, y=260)
 
+	def close_win_callback(self):
+		'''点击X关闭窗口回调函数'''
+		self.box_window.destroy()
+		del(self.main_window.tool_if)
+
 	def select_route_table_callback(self):
 		'''选择路由表回调函数'''
 		self.public_for_all = public4all.Public4All()
@@ -118,6 +124,7 @@ class BoxWindow(object):
 
 	def back_callback(self):
 		'''帮助'''
-		pass
+		self.box_window.destroy()
+		del(self.main_window.tool_if)
 
 
