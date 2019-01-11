@@ -19,9 +19,9 @@ class BoxWindow(object):
 		self.routetable_pathname_display = Label(self.box_window, text="请选择 <xxx_路由表提取>", bg="white", font=("楷体", 9), width=56, height=2)
 		self.routetable_pathname_display.place(x=90, y=22)
 
-		self.msgtable_select_buntton = Button(self.box_window, text="选择路由表", bg="lightgreen", activebackground="gold", \
+		self.routetable_select_buntton = Button(self.box_window, text="选择路由表", bg="lightgreen", activebackground="gold", \
 												fg="black", activeforeground="black", font=("楷体", 9), width=12, height=2, command=self.select_route_table_callback)
-		self.msgtable_select_buntton.place(x=450, y=20)
+		self.routetable_select_buntton.place(x=450, y=20)
 
 		# PostBuild报文表
 		self.signaltable_select_buntton = Button(self.box_window, text="PostBuild报文表", bg="lightgreen", activebackground="gold", \
