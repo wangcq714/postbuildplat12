@@ -1,7 +1,7 @@
 # V1.6
 
 
-import sys
+# import sys
 
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter, column_index_from_string
@@ -9,36 +9,37 @@ from openpyxl import Workbook
 import csv
 #from tkinter import *
 from tkinter.filedialog import askopenfilename
-import pandas
+# import pandas
+from pandas import read_excel
 #import numpy
 
 
-#获取通道映射
-def get_channalmapping(sheet):
-	for i in range(6):
-		ChannalMapping[sheet['N' + str(i + 3)].value] = sheet['M' + str(i + 3)].value
+# #获取通道映射
+# def get_channalmapping(sheet):
+# 	for i in range(6):
+# 		ChannalMapping[sheet['N' + str(i + 3)].value] = sheet['M' + str(i + 3)].value
 
 #获取通道映射
 def get_channalmapping_pandas(dataFrame):
 	for i in range(6):
 		ChannalMapping[dataFrame.values[i + 2][column_index_from_string('N') - 1]] = dataFrame.values[i +2][column_index_from_string('M') - 1]
 
-#读取指定行数据
-def read_line(sheet, column) -> list:
-	src_column_data = []
-	for cell in list(sheet.rows)[column][:column_index_from_string('O'):]:
-		src_column_data.append(str(cell.value).rstrip('\n'))
-	#print(src_row_data)
-	return src_column_data
+# #读取指定行数据
+# def read_line(sheet, column) -> list:
+# 	src_column_data = []
+# 	for cell in list(sheet.rows)[column][:column_index_from_string('O'):]:
+# 		src_column_data.append(str(cell.value).rstrip('\n'))
+# 	#print(src_row_data)
+# 	return src_column_data
 
-#读取表中所有有效行数据
-def read_lines_all(sheet):
-	for i in range(2, int(sys.argv[1])):
-		tmpList = read_line(sheet, i)
-		if tmpList[0] != "None":
-			src_row_data_all.append(tmpList)
-		else:
-			break
+# #读取表中所有有效行数据
+# def read_lines_all(sheet):
+# 	for i in range(2, int(sys.argv[1])):
+# 		tmpList = read_line(sheet, i)
+# 		if tmpList[0] != "None":
+# 			src_row_data_all.append(tmpList)
+# 		else:
+# 			break
 
 #创建目标单行数据
 def build_des_column_data(LineNumber, Txchannal, src_num) -> list:
@@ -117,45 +118,45 @@ def build_des_column_data_all():
 					diag_LineNumber += 1				
 
 
-#主函数
-def main():
+# #主函数
+# def main():
 
-	# 默认可读写，若有需要可以指定write_only和read_only为True
-	wb = load_workbook(pathname)
+# 	# 默认可读写，若有需要可以指定write_only和read_only为True
+# 	wb = load_workbook(pathname)
 
-	# 根据sheet名字获得sheet
-	sheet = wb['Sheet1']
+# 	# 根据sheet名字获得sheet
+# 	sheet = wb['Sheet1']
 
-	print(sheet.max_row)
+# 	print(sheet.max_row)
 
-	#通道映射
-	get_channalmapping(sheet)
-	#print(ChannalMapping)
+# 	#通道映射
+# 	get_channalmapping(sheet)
+# 	#print(ChannalMapping)
 
-	#读取原表中的所有数据
-	read_lines_all(sheet)
+# 	#读取原表中的所有数据
+# 	read_lines_all(sheet)
 
-	#创建目标表列表
-	build_des_column_data_all()
+# 	#创建目标表列表
+# 	build_des_column_data_all()
 
-	#将目标列表写入目标文件中
-	with open(pathname[:pathname.rfind('/')+1] + "MessageRoute.csv", 'w') as csvfile:	
-		writer = csv.writer(csvfile)
-		#写入表头
-		writer.writerow(TableHeader)
-		#写入目标数据
-		writer.writerows(des_column_data_all)
+# 	#将目标列表写入目标文件中
+# 	with open(pathname[:pathname.rfind('/')+1] + "MessageRoute.csv", 'w') as csvfile:	
+# 		writer = csv.writer(csvfile)
+# 		#写入表头
+# 		writer.writerow(TableHeader)
+# 		#写入目标数据
+# 		writer.writerows(des_column_data_all)
 
-	#print(src_row_data_all)
-	#print(des_column_data_all)
+# 	#print(src_row_data_all)
+# 	#print(des_column_data_all)
 
-	print("------------------Finished--------------------------")
+# 	print("------------------Finished--------------------------")
 
 #主函数
 def main_pandas():
 	global src_row_data_all
 
-	dataFrame = pandas.read_excel(pathname, sheet_name="Sheet1", header=None, na_values="", usecols="A:Q")
+	dataFrame = read_excel(pathname, sheet_name="Sheet1", header=None, na_values="", usecols="A:Q")
 	
 	src_row_data_all = dataFrame.fillna("None").values[2:].tolist()
 
