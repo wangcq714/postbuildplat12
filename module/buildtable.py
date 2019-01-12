@@ -1,13 +1,13 @@
 # import copy
 from copy import deepcopy
-from openpyxl.utils import get_column_letter, column_index_from_string
+# from openpyxl.utils import get_column_letter, column_index_from_string
 
 
 # hex操作基类
 class HexBase(object):
 	"""操作hex"""
 	def build_hex_data(self, dataList):
-		"""创建hex有效数据"""
+		"""创建hex有效数据, dataList:二维列表"""
 		self.hexDataList = []
 		# 创建中断MO初始化表hex
 		for subList in dataList:
@@ -133,14 +133,25 @@ class CanFullIdNameISR(HexBase):
 		"""获取有效数据"""
 		# 深拷贝一份路由数据，不破坏原有数据
 		msgDataList = deepcopy(msgRoute.dataList)
+		msgHeaderList = deepcopy(msgRoute.headerList)
 		signalDataList = deepcopy(signalRoute.dataList)
+		signalHeaderList = deepcopy(signalRoute.headerList)
 		# 轮询普通报文数据
 		for subList in msgDataList:
 			# 判断子列表是否为中断报文数据
-			if subList[column_index_from_string('M') - 1] == '1':
+			# if subList[column_index_from_string('M') - 1] == '1':
+			if subList[msgHeaderList.index("RxInterrupt")] == '1':
+				# 每循环一次深拷贝一份报文表头，因为每次循环都对原始表头修改
+				self.msgValidHeaderList = deepcopy(msgHeaderList)				
 				# 弹出序号和目标通道，同一发送通道相同ID发往不同通道的余下内容相同
-				num = subList.pop(column_index_from_string('A') - 1)
-				MsgDesCh = subList.pop(column_index_from_string('F') - 2)
+				# num = subList.pop(column_index_from_string('A') - 1)
+				# MsgDesCh = subList.pop(column_index_from_string('F') - 2)
+				num = subList.pop(self.msgValidHeaderList.index("LineNumber"))
+				self.msgValidHeaderList.pop(self.msgValidHeaderList.index("LineNumber"))
+				# print(self.msgValidHeaderList)
+				MsgDesCh = subList.pop(self.msgValidHeaderList.index("TxChannle"))
+				self.msgValidHeaderList.pop(self.msgValidHeaderList.index("TxChannle"))
+				# print(self.msgValidHeaderList)
 				# 如果子列表数据首次出现，则保存，否则只将相应目的通道附加至目的通道列表
 				if subList not in self.msgValidDataListISR:
 					self.msgValidDataListISR.append(subList)
@@ -154,8 +165,10 @@ class CanFullIdNameISR(HexBase):
 		# print(self.msgDesChListISR)
 
 		# 对普通报文信息和报文目标通道按ID大小进行排序
-		self.msgValidDataListISR = sorted(self.msgValidDataListISR, key=lambda subList:[int(subList[column_index_from_string('C') - 2], 16), int(subList[column_index_from_string('K') - 3])])
-		self.msgDesChListISR = sorted(self.msgDesChListISR, key=lambda subList:[int(subList[0][column_index_from_string('C') - 2], 16), int(subList[0][column_index_from_string('K') - 3])])
+		# self.msgValidDataListISR = sorted(self.msgValidDataListISR, key=lambda subList:[int(subList[column_index_from_string('C') - 2], 16), int(subList[column_index_from_string('K') - 3])])
+		# self.msgDesChListISR = sorted(self.msgDesChListISR, key=lambda subList:[int(subList[0][column_index_from_string('C') - 2], 16), int(subList[0][column_index_from_string('K') - 3])])
+		self.msgValidDataListISR = sorted(self.msgValidDataListISR, key=lambda subList:[int(subList[self.msgValidHeaderList.index("TxCANID")], 16), int(subList[self.msgValidHeaderList.index("RxChannel")])])
+		self.msgDesChListISR = sorted(self.msgDesChListISR, key=lambda subList:[int(subList[0][self.msgValidHeaderList.index("TxCANID")], 16), int(subList[0][self.msgValidHeaderList.index("RxChannel")])])
 		# print(self.msgValidDataListISR)
 		# print(self.msgDesChListISR)
 		# 轮询信号报文数据
@@ -165,13 +178,17 @@ class CanFullIdNameISR(HexBase):
 	def __msgDataHandlingISR1(self, index):
 		"""中断初始化表接收部分"""
 		retList = []
-		retList.append(self.msgValidDataListISR[index][column_index_from_string('C') - 2] + 'u')
-		retList.append(self.msgValidDataListISR[index][column_index_from_string('K') - 3] + 'u')
+		# retList.append(self.msgValidDataListISR[index][column_index_from_string('C') - 2] + 'u')
+		# retList.append(self.msgValidDataListISR[index][column_index_from_string('K') - 3] + 'u')
+		retList.append(self.msgValidDataListISR[index][self.msgValidHeaderList.index("TxCANID")] + 'u')
+		retList.append(self.msgValidDataListISR[index][self.msgValidHeaderList.index("RxChannel")] + 'u')
 		retList.append('1u')
 		retList.append(str(self.MO_num) + 'u')	
-		retList.append(self.msgValidDataListISR[index][column_index_from_string('L') - 3] + 'u')
+		# retList.append(self.msgValidDataListISR[index][column_index_from_string('L') - 3] + 'u')
+		retList.append(self.msgValidDataListISR[index][self.msgValidHeaderList.index("RxMsk")] + 'u')
 		retList.append('0u')
-		retList.append(self.msgValidDataListISR[index][column_index_from_string('J') - 3] + 'u')
+		# retList.append(self.msgValidDataListISR[index][column_index_from_string('J') - 3] + 'u')
+		retList.append(self.msgValidDataListISR[index][self.msgValidHeaderList.index("RxDLC")] + 'u')
 		retList.append('1u')
 		retList.append('0xffu')
 		retList.append('0u')
@@ -183,13 +200,16 @@ class CanFullIdNameISR(HexBase):
 	def __msgDataHandlingISR2(self, i, des_ch):
 		"""中断初始化表发送部分"""
 		retList = []	
-		retList.append(self.msgDesChListISR[i][0][column_index_from_string('C') - 2] + 'u')
+		# retList.append(self.msgDesChListISR[i][0][column_index_from_string('C') - 2] + 'u')
+		retList.append(self.msgDesChListISR[i][0][self.msgValidHeaderList.index("TxCANID")] + 'u')
 		retList.append(str(des_ch) + 'u')
 		retList.append('0u')
 		retList.append(str(self.MO_num) + 'u')		
-		retList.append(self.msgDesChListISR[i][0][column_index_from_string('L') - 3] + 'u')
+		# retList.append(self.msgDesChListISR[i][0][column_index_from_string('L') - 3] + 'u')
+		retList.append(self.msgDesChListISR[i][0][self.msgValidHeaderList.index("RxMsk")] + 'u')
 		retList.append('0u')
-		retList.append(self.msgDesChListISR[i][0][column_index_from_string('J') - 3] + 'u')
+		# retList.append(self.msgDesChListISR[i][0][column_index_from_string('J') - 3] + 'u')
+		retList.append(self.msgDesChListISR[i][0][self.msgValidHeaderList.index("RxDLC")] + 'u')
 		retList.append('0u')
 		retList.append("0xffu")
 		retList.append('0u')
@@ -243,90 +263,108 @@ class RoutingTable(object):
 		"""获取有效数据"""
 		# 深拷贝一份路由数据，不破坏原有数据
 		msgDataList = deepcopy(msgRoute.dataList)
+		msgHeaderList = deepcopy(msgRoute.headerList)
 		signalDataList = deepcopy(signalRoute.dataList)
+		signalHeaderList = deepcopy(signalRoute.headerList)
 
-		for subList in msgDataList:
-			num = subList.pop(column_index_from_string('A') - 1)
-			MsgDesCh = subList.pop(column_index_from_string('F') - 2)
-			if subList not in self.msgValidDataList:
-				self.msgValidDataList.append(subList)
-				self.msgDesChList.append([subList[column_index_from_string('C') - 2]])
-				if MsgDesCh != '0':
-					self.msgDesChList[len(self.msgValidDataList) - 1].append(MsgDesCh)
-				if subList[column_index_from_string('M') - 3] == "0":
-					pass
-					# self.msgDesChList[len(self.msgValidDataList) - 1].append(MsgDesCh)
-				else:
-					self.msgValidDataListISR.append(subList)
-					self.msgDesChListISR.append([subList])
+		if msgDataList:
+			for subList in msgDataList:
+				# 每循环一次深拷贝一份报文表头，因为每次循环都对原始表头修改
+				self.msgValidHeaderList = deepcopy(msgHeaderList)	
+				# 弹出序号和目标通道，同一发送通道相同ID发往不同通道的余下内容相同
+				# num = subList.pop(column_index_from_string('A') - 1)
+				# MsgDesCh = subList.pop(column_index_from_string('F') - 2)
+				num = subList.pop(self.msgValidHeaderList.index("LineNumber"))
+				self.msgValidHeaderList.pop(self.msgValidHeaderList.index("LineNumber"))
+				MsgDesCh = subList.pop(self.msgValidHeaderList.index("TxChannle"))
+				self.msgValidHeaderList.pop(self.msgValidHeaderList.index("TxChannle"))
+
+				if subList not in self.msgValidDataList:
+					self.msgValidDataList.append(subList)
+					self.msgDesChList.append([subList[self.msgValidHeaderList.index("TxCANID")]])
 					if MsgDesCh != '0':
-						self.msgDesChListISR[len(self.msgValidDataListISR) - 1].append(MsgDesCh)
+						self.msgDesChList[len(self.msgValidDataList) - 1].append(MsgDesCh)
+					if subList[self.msgValidHeaderList.index("RxInterrupt")] == "0":
+						pass
+						# self.msgDesChList[len(self.msgValidDataList) - 1].append(MsgDesCh)
+					else:
+						self.msgValidDataListISR.append(subList)
+						self.msgDesChListISR.append([subList])
+						if MsgDesCh != '0':
+							self.msgDesChListISR[len(self.msgValidDataListISR) - 1].append(MsgDesCh)
 
-			else:
-				if MsgDesCh != '0':
-					self.msgDesChList[self.msgValidDataList.index(subList)].append(MsgDesCh)
-				if subList[column_index_from_string('M') - 3] == "0":
-					pass
-					# self.msgDesChList[self.msgValidDataList.index(subList)].append(MsgDesCh)
 				else:
 					if MsgDesCh != '0':
-						self.msgDesChListISR[len(self.msgValidDataListISR) - 1].append(MsgDesCh)
-		# print(self.msgValidDataList)
-		# print(self.msgDesChList)
-		# print(len(self.msgValidDataList))
-		# print(len(self.msgDesChList))
-		self.msgValidDataListISR = sorted(self.msgValidDataListISR, key=lambda subList:[int(subList[column_index_from_string('C') - 2], 16), int(subList[column_index_from_string('K') - 3])])
-		self.msgDesChListISR = sorted(self.msgDesChListISR, key=lambda subList:[int(subList[0][column_index_from_string('C') - 2], 16), int(subList[0][column_index_from_string('K') - 3])])
-		# for i in range(len(self.msgDesChListISR)):
-		# 	self.msgDesChListISR[]
-		# print(self.msgValidDataListISR)
-		# print(self.msgDesChListISR)
+						self.msgDesChList[self.msgValidDataList.index(subList)].append(MsgDesCh)
+					if subList[self.msgValidHeaderList.index("RxInterrupt")] == "0":
+						pass
+						# self.msgDesChList[self.msgValidDataList.index(subList)].append(MsgDesCh)
+					else:
+						if MsgDesCh != '0':
+							self.msgDesChListISR[len(self.msgValidDataListISR) - 1].append(MsgDesCh)
+			# print(self.msgValidDataList)
+			# print(self.msgDesChList)
+			# print(len(self.msgValidDataList))
+			# print(len(self.msgDesChList))
+			self.msgValidDataListISR = sorted(self.msgValidDataListISR, key=lambda subList:[int(subList[self.msgValidHeaderList.index("TxCANID")], 16), int(subList[self.msgValidHeaderList.index("RxChannel")])])
+			self.msgDesChListISR = sorted(self.msgDesChListISR, key=lambda subList:[int(subList[0][self.msgValidHeaderList.index("TxCANID")], 16), int(subList[0][self.msgValidHeaderList.index("RxChannel")])])
+			# for i in range(len(self.msgDesChListISR)):
+			# 	self.msgDesChListISR[]
+			# print(self.msgValidDataListISR)
+			# print(self.msgDesChListISR)
 
-		for subList in signalDataList:
-			tmpList = [subList[column_index_from_string('J') - 1],
-					   subList[column_index_from_string('M') - 1],
-					   subList[column_index_from_string('Q') - 1],
-					   subList[column_index_from_string('K') - 1],
-					   subList[column_index_from_string('L') - 1]]
-			if tmpList not in self.signalValidDataList:
-				self.signalValidDataList.append(tmpList)
-		self.signalValidDataList = sorted(self.signalValidDataList, key=lambda subList:int(subList[0], 16))
-		# print(self.signalValidDataList)
-		# print(len(self.signalValidDataList))
+		# 提取信号有效头列表
+		if signalDataList:
+			self.sigValidHeaderList = [signalHeaderList[signalHeaderList.index("RxCANID")],\
+									   signalHeaderList[signalHeaderList.index("RxChannel")],\
+									   signalHeaderList[signalHeaderList.index("RxDTC")],\
+									   signalHeaderList[signalHeaderList.index("RxPeriod")],\
+									   signalHeaderList[signalHeaderList.index("RxDLC")]]
+			for subList in signalDataList:
+				tmpList = [subList[signalHeaderList.index("RxCANID")],
+						   subList[signalHeaderList.index("RxChannel")],
+						   subList[signalHeaderList.index("RxDTC")],
+						   subList[signalHeaderList.index("RxPeriod")],
+						   subList[signalHeaderList.index("RxDLC")]]
+				if tmpList not in self.signalValidDataList:
+					self.signalValidDataList.append(tmpList)
+			self.signalValidDataList = sorted(self.signalValidDataList, key=lambda subList:int(subList[self.sigValidHeaderList.index("RxCANID")], 16))
+			# print(self.signalValidDataList)
+			# print(len(self.signalValidDataList))
 
 	# 普通报文数据处理
 	def __msgDataHandling(self, index):
 		retList = []
-		retList.append(self.msgValidDataList[index][column_index_from_string('C') - 2]) # ID
-		retList.append(str(len(self.msgDesChList[self.msgValidDataList.index(self.msgValidDataList[index])]) - 1) + 'u') # dest_mo_num
+		retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("TxCANID")]) # ID
+		retList.append(str(len(self.msgDesChList[index]) - 1) + 'u') # dest_mo_num
 		retList.append("255u") # src_ecu_node
 		retList.append("255u") # valid_flg_index(DTC)
-		retList.append(self.msgValidDataList[index][column_index_from_string('E') - 2] + 'u') # DLC
-		if self.msgValidDataList[index][column_index_from_string('M') - 3] == '0': # dest_mo
+		retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("TxDLC")] + 'u') # DLC
+		if self.msgValidDataList[index][self.msgValidHeaderList.index("RxInterrupt")] == '0': # dest_mo
 			for ch in sorted(self.msgDesChList[index][1:]):
 				retList.append(ch + 'u')
-				retList.append(self.msgValidDataList[index][column_index_from_string('O') - 3] + 'u')
+				retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RouteCondiction")] + 'u')
 			for i in range(5 - len(self.msgDesChList[index]) + 1):
 				retList.append('0u')
 				retList.append('0u')
 		else:
 			for ch in sorted(self.msgDesChList[index][1:]):
 				retList.append('0u')
-				retList.append(self.msgValidDataList[index][column_index_from_string('O') - 3] + 'u')
+				retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RouteCondiction")] + 'u')
 			for i in range(5 - len(self.msgDesChList[index]) + 1):
 				retList.append('0u')
 				retList.append('0u')
-		if(self.msgValidDataList[index][column_index_from_string('D') - 2] != "None"):	
-			retList.append(self.msgValidDataList[index][column_index_from_string('D') - 2] + 'u') # cycle
+		if(self.msgValidDataList[index][self.msgValidHeaderList.index("TxPeriod")] != "None"):	
+			retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("TxPeriod")] + 'u') # cycle
 		else:
 			retList.append('0u')
 		retList.append('0u') # msg_index
 		retList.append('0x0000u') # buf_index
 		retList.append('0u') # pre_callback
 		retList.append('0u') # post_callback
-		retList.append(self.msgValidDataList[index][column_index_from_string('M') - 3]) # RxInterrupt
-		retList.append(self.msgValidDataList[index][column_index_from_string('N') - 3]) # RxDTC
-		retList.append(self.msgValidDataList[index][column_index_from_string('K') - 3]) # RxCh
+		retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RxInterrupt")]) # RxInterrupt
+		retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RxDTC")]) # RxDTC
+		retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RxChannel")]) # RxCh
 
 		# print(retList)
 		return retList
@@ -334,22 +372,22 @@ class RoutingTable(object):
 	# 信号报文数据处理
 	def __sigDataHandling(self, index):
 		retList = []
-		retList.append(self.signalValidDataList[index][0]) # ID
+		retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxCANID")]) # ID
 		retList.append("0u") # dest_mo_num
 		retList.append("255u") # src_ecu_node
 		retList.append("255u") # valid_flg_index(DTC)
-		retList.append(self.signalValidDataList[index][4] + 'u') # DLC
+		retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxDLC")] + 'u') # DLC
 		for i in range(5): # dest_mo
 			retList.append('0u')
 			retList.append('0u')
-		retList.append(self.signalValidDataList[index][3] + 'u') # cycle
+		retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxPeriod")] + 'u') # cycle
 		retList.append('0u') # msg_index
 		retList.append('0x0000u') # buf_index
 		retList.append("0u") # pre_callback
 		retList.append("0u") # post_callback
 		retList.append('0') # RxInterrupt
-		retList.append(self.signalValidDataList[index][2]) # RxDTC
-		retList.append(self.signalValidDataList[index][1]) # RxCh
+		retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxDTC")]) # RxDTC
+		retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxChannel")]) # RxCh
 
 		# print(retList)
 		return retList
@@ -366,13 +404,13 @@ class RoutingTable(object):
 		# 将信号源报文存入self.routerTableList
 		for index in range(len(self.signalValidDataList)):
 			# 轮询普通报文列表查询当前信号报文ID是否存在于普通报文转发列表
-			if len(list(filter(lambda subList: subList[column_index_from_string('C') - 2] == self.signalValidDataList[index][0], self.msgValidDataList))) == 0:
+			if len(list(filter(lambda subList: subList[self.msgValidHeaderList.index("TxCANID")] == self.signalValidDataList[index][self.sigValidHeaderList.index("RxCANID")], self.msgValidDataList))) == 0:
 				self.routerTableList.append(self.__sigDataHandling(index))
 		# print(self.routerTableList)
 		# print(len(self.routerTableList))
 
-		# 将所有报文按ID大小排序
-		self.routerTableList = sorted(self.routerTableList, key=lambda subList: [int(subList[0], 16), int(subList[-1])])
+		# 将所有报文按ID大小排序, 在ID排序基础上以接收通道排序；所有表中都这样处理。
+		self.routerTableList = sorted(self.routerTableList, key=lambda subList: [int(subList[self.routerTableListHeader.index("RxCANID")], 16), int(subList[self.routerTableListHeader.index("RxChannel")])])
 		# print(self.routerTableList)
 		# print(len(self.routerTableList))
 		
@@ -381,19 +419,19 @@ class RoutingTable(object):
 		for subSigList in self.signalValidDataList:
 			for subRouterList in self.routerTableList:
 				# print(subRouterList)
-				if subSigList[0] == subRouterList[0]:
-					subRouterList[-7] = str(SrcSig_Num) + 'u'
-					subRouterList[-6] = "0x" + hex(int("0xF000", 16) + int(subRouterList[-6][:-1], 16) + 8*SrcSig_Num)[2:].upper() + 'u'
+				if subSigList[self.sigValidHeaderList.index("RxCANID")] == subRouterList[self.routerTableListHeader.index("RxCANID")]:
+					subRouterList[self.routerTableListHeader.index("msg_index")] = str(SrcSig_Num) + 'u'
+					subRouterList[self.routerTableListHeader.index("buf_index")] = "0x" + hex(int("0xF000", 16) + int(subRouterList[self.routerTableListHeader.index("buf_index")][:-1], 16) + 8*SrcSig_Num)[2:].upper() + 'u'
 					SrcSig_Num += 1
 
 		# 对判别DTC报文进行标序,并且将路由表拆分为中断和FIFO
 		DTC_Num = 0
 		for subList in self.routerTableList:		
-			if subList[-2] == "Y":
-				subList[3] = str(DTC_Num) + 'u'
+			if subList[self.routerTableListHeader.index("RxDTC")] == "Y":
+				subList[self.routerTableListHeader.index("valid_flg_index")] = str(DTC_Num) + 'u'
 				DTC_Num += 1
 			
-			if subList[-3] == '1':
+			if subList[self.routerTableListHeader.index("RxInterrupt")] == '1':
 				self.routerTableISRList.append(subList)
 			else:
 				self.routerTableFIFOList.append(subList)
@@ -404,7 +442,7 @@ class RoutingTable(object):
 		MO_ISR_num = len(self.routerTableISRList)
 		for i in range(len(self.routerTableISRList)):
 			for j in range(len(self.msgDesChListISR[i][1:])):
-				self.routerTableISRList[i][5 + j*2] = str(MO_ISR_num) + 'u'
+				self.routerTableISRList[i][self.routerTableListHeader.index("dest_mo_index1") + j*2] = str(MO_ISR_num) + 'u'
 				MO_ISR_num += 1
 		# print(self.routerTableISRList)
 
@@ -424,6 +462,10 @@ class PbDirectRoutingTable(RoutingTable, HexBase):
 		self.msgDesChListISR = []
 		self.signalValidDataList = []
 		self.routerTableList = []
+		self.routerTableListHeader = ["RxCANID", "dest_mo_num", "src_ecu_node", "valid_flg_index", "DLC", "dest_mo_index1", "dest_mo_condition1",\
+									  "dest_mo_index2", "dest_mo_condition2", "dest_mo_index3", "dest_mo_condition3", "dest_mo_index4", "dest_mo_condition4",\
+									  "dest_mo_index5", "dest_mo_condition5", "cycle", "msg_index", "buf_index", "pre_callback", "post_callback",\
+									  "RxInterrupt", "RxDTC", "RxChannel"]
 		self.routerTableISRList = []
 		self.routerTableFIFOList = []
 		self.PB_DirectRoutingTable = []
@@ -447,7 +489,7 @@ class PbDirectRoutingTable(RoutingTable, HexBase):
 		for subList in self.routerTableISRList:
 			# print(subList)
 			self.PB_DirectRoutingTable.append('/*' + subList[0] + '*/' + '{')
-			self.PB_DirectRoutingTable.append(','.join(subList[1:-3]))
+			self.PB_DirectRoutingTable.append(','.join(subList[self.routerTableListHeader.index("dest_mo_num"):self.routerTableListHeader.index("RxInterrupt")]))
 			self.PB_DirectRoutingTable.append('},\n')
 		else:
 			# 如果列表为空，则以0，填充数组，以防工程编译时不通过.
@@ -467,6 +509,10 @@ class PbMsgRoutingTable(RoutingTable, HexBase):
 		self.msgDesChListISR = []
 		self.signalValidDataList = []
 		self.routerTableList = []
+		self.routerTableListHeader = ["RxCANID", "dest_mo_num", "src_ecu_node", "valid_flg_index", "DLC", "dest_mo_index1", "dest_mo_condition1",\
+									  "dest_mo_index2", "dest_mo_condition2", "dest_mo_index3", "dest_mo_condition3", "dest_mo_index4", "dest_mo_condition4",\
+									  "dest_mo_index5", "dest_mo_condition5", "cycle", "msg_index", "buf_index", "pre_callback", "post_callback",\
+									  "RxInterrupt", "RxDTC", "RxChannel"]
 		self.routerTableISRList = []
 		self.routerTableFIFOList = []
 		self.PB_MsgRoutingTable = []
@@ -490,7 +536,7 @@ class PbMsgRoutingTable(RoutingTable, HexBase):
 		for subList in self.routerTableFIFOList:
 			# print(subList)
 			self.PB_MsgRoutingTable.append('/*' + subList[0] + '*/' + '{')
-			self.PB_MsgRoutingTable.append(','.join(subList[1:-3]))
+			self.PB_MsgRoutingTable.append(','.join(subList[self.routerTableListHeader.index("dest_mo_num"):self.routerTableListHeader.index("RxInterrupt")]))
 			self.PB_MsgRoutingTable.append('},\n')
 		else:
 			# 如果列表为空，则以0，填充数组，以防工程编译时不通过.
@@ -520,27 +566,37 @@ class PbMsgRecvTable(HexBase):
 		"""获取有效数据"""
 		# 深拷贝一份路由数据，不破坏原有数据
 		signalDataList = deepcopy(signalRoute.dataList)
-		for subList in signalDataList:
-			tmpList = [subList[column_index_from_string('J') - 1],
-					   subList[column_index_from_string('K') - 1],
-					   subList[column_index_from_string('L') - 1],
-					   subList[column_index_from_string('M') - 1],
-					   subList[column_index_from_string('P') - 1]]
-			if tmpList not in self.signalValidDataList:
-				self.signalValidDataList.append(tmpList)
-		self.signalValidDataList = sorted(self.signalValidDataList, key=lambda subList:int(subList[0], 16))
-		# print(self.signalValidDataList)
-		# print(len(self.signalValidDataList))
+		signalHeaderList = deepcopy(signalRoute.headerList)
+		
+		if signalDataList:
+		# 提取信号有效头列表		
+			self.sigValidHeaderList = [signalHeaderList[signalHeaderList.index("RxCANID")],\
+									   signalHeaderList[signalHeaderList.index("RxPeriod")],\
+									   signalHeaderList[signalHeaderList.index("RxDLC")],\
+									   signalHeaderList[signalHeaderList.index("RxChannel")],\
+									   signalHeaderList[signalHeaderList.index("ByteOrder")]]
+
+			for subList in signalDataList:
+				tmpList = [subList[signalHeaderList.index("RxCANID")],
+						   subList[signalHeaderList.index("RxPeriod")],
+						   subList[signalHeaderList.index("RxDLC")],
+						   subList[signalHeaderList.index("RxChannel")],
+						   subList[signalHeaderList.index("ByteOrder")]]
+				if tmpList not in self.signalValidDataList:
+					self.signalValidDataList.append(tmpList)
+			self.signalValidDataList = sorted(self.signalValidDataList, key=lambda subList:int(subList[self.sigValidHeaderList.index("RxCANID")], 16))
+			# print(self.signalValidDataList)
+			# print(len(self.signalValidDataList))
 
 	def __src_signal_handling(self, index):
 		"""对源信号报文进行处理，得到PB_Msg_Recv_Table表的一行"""
 		retList = []
-		retList.append(self.signalValidDataList[index][0] + 'u')
-		retList.append(self.signalValidDataList[index][1] + 'u')
-		retList.append(str(int(self.signalValidDataList[index][1]) * 5) + 'u')
-		retList.append(self.signalValidDataList[index][3] + 'u')
-		retList.append(self.signalValidDataList[index][2] + 'u')
-		retList.append(self.signalValidDataList[index][4] + 'u')
+		retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxCANID")] + 'u')
+		retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxPeriod")] + 'u')
+		retList.append(str(int(self.signalValidDataList[index][self.sigValidHeaderList.index("RxPeriod")]) * 5) + 'u')
+		retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxChannel")] + 'u')
+		retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxDLC")] + 'u')
+		retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("ByteOrder")] + 'u')
 		retList.append('0u')
 
 		# print(retList)
@@ -593,37 +649,42 @@ class PbSignalRoutingTable(HexBase):
 		"""获取有效数据"""
 		# 深拷贝一份路由数据，不破坏原有数据
 		signalDataList = deepcopy(signalRoute.dataList)
+		signalHeaderList = deepcopy(signalRoute.headerList)
 
-		# 首先获取发送信号ID，并以ID大小进行排序
-		for subList in signalDataList:
-			txCanId = subList[column_index_from_string('C') - 1]
-			if txCanId not in self.txCanIdList:
-				self.txCanIdList.append(txCanId)
-		self.txCanIdList = sorted(self.txCanIdList, key=lambda txCanId:int(txCanId, 16))
-		# print(self.txCanIdList)
+		if signalDataList:
+			# 提取信号有效头列表
+			self.sigValidHeaderList = signalHeaderList
 
-		# 然后根据已排序的发送信号ID获取有效信号数据，存储在列表中(相当于对整个信号表数据按发送ID大小进行按块排序)
-		for txCanId in self.txCanIdList:
-			# 每一个发送ID对应的接收ID存储在一个列表中，最后再将所有rxCanIdList存储在一个列表中
-			# validDataList = []
+			# 首先获取发送信号ID，并以ID大小进行排序
 			for subList in signalDataList:
-				if subList[column_index_from_string('C') - 1] == txCanId:
-					# validDataList.append(subList)
-					# print(subList)
-					self.validDataListList.append(subList)
+				txCanId = subList[self.sigValidHeaderList.index("TxCANID")]
+				if txCanId not in self.txCanIdList:
+					self.txCanIdList.append(txCanId)
+			self.txCanIdList = sorted(self.txCanIdList, key=lambda txCanId:int(txCanId, 16))
+			# print(self.txCanIdList)
 
-		# 获取接收信号ID，并以ID大小排序，用于索引接收信号表(PbMsgRecvTable)的字节位位置
-		for subList in signalDataList:
-			rxCanId = subList[column_index_from_string('J') - 1]
-			if rxCanId not in self.rxCanIdList:
-				self.rxCanIdList.append(rxCanId)
-		self.rxCanIdList = sorted(self.rxCanIdList, key=lambda rxCanId:int(rxCanId, 16))
-		# print(self.rxCanIdList)
+			# 然后根据已排序的发送信号ID获取有效信号数据，存储在列表中(相当于对整个信号表数据按发送ID大小进行按块排序)
+			for txCanId in self.txCanIdList:
+				# 每一个发送ID对应的接收ID存储在一个列表中，最后再将所有rxCanIdList存储在一个列表中
+				# validDataList = []
+				for subList in signalDataList:
+					if subList[self.sigValidHeaderList.index("TxCANID")] == txCanId:
+						# validDataList.append(subList)
+						# print(subList)
+						self.validDataListList.append(subList)
+
+			# 获取接收信号ID，并以ID大小排序，用于索引接收信号表(PbMsgRecvTable)的字节位位置
+			for subList in signalDataList:
+				rxCanId = subList[self.sigValidHeaderList.index("RxCANID")]
+				if rxCanId not in self.rxCanIdList:
+					self.rxCanIdList.append(rxCanId)
+			self.rxCanIdList = sorted(self.rxCanIdList, key=lambda rxCanId:int(rxCanId, 16))
+			# print(self.rxCanIdList)
 
 	def __calculate_source_index(self, subList) -> str:
 		"""计算源信号字节索引"""
-		ret = str(self.rxCanIdList.index(subList[column_index_from_string('J') - 1]) * 8 + \
-			int(subList[column_index_from_string('N') - 1])//8)
+		ret = str(self.rxCanIdList.index(subList[self.sigValidHeaderList.index("RxCANID")]) * 8 + \
+			int(subList[self.sigValidHeaderList.index("RxStartBit")])//8)
 
 		return ret
 
@@ -633,11 +694,11 @@ class PbSignalRoutingTable(HexBase):
 		retList = []
 
 		retList.append(self.__calculate_source_index(subList) + 'u')
-		retList.append(str(int(subList[column_index_from_string('N') - 1])%8) + 'u')
-		retList.append(subList[column_index_from_string('O') - 1] + 'u')
-		retList.append(str(int(subList[column_index_from_string('G') - 1])//8) + 'u')
-		retList.append(str(int(subList[column_index_from_string('G') - 1])%8) + 'u')
-		retList.append(subList[column_index_from_string('P') - 1] + 'u')
+		retList.append(str(int(subList[self.sigValidHeaderList.index("RxStartBit")])%8) + 'u')
+		retList.append(subList[self.sigValidHeaderList.index("RxSigLen")] + 'u')
+		retList.append(str(int(subList[self.sigValidHeaderList.index("TxStartBit")])//8) + 'u')
+		retList.append(str(int(subList[self.sigValidHeaderList.index("TxStartBit")])%8) + 'u')
+		retList.append(subList[self.sigValidHeaderList.index("ByteOrder")] + 'u')
 		retList.append('0xffu')
 
 		# print(retList)
@@ -656,11 +717,11 @@ class PbSignalRoutingTable(HexBase):
 		self.PB_Signal_Routing_Table.append("=\n")
 		self.PB_Signal_Routing_Table.append("{\n")
 		for index in range(len(self.PbSignalRoutingTableList)):
-			self.PB_Signal_Routing_Table.append("/*" + self.validDataListList[index][column_index_from_string('J') - 1] + "*/")
+			self.PB_Signal_Routing_Table.append("/*" + self.validDataListList[index][self.sigValidHeaderList.index("RxCANID")] + "*/")
 			self.PB_Signal_Routing_Table.append("{")
 			self.PB_Signal_Routing_Table.append(','.join(self.PbSignalRoutingTableList[index]))
 			self.PB_Signal_Routing_Table.append("},")
-			self.PB_Signal_Routing_Table.append("/*" + self.validDataListList[index][column_index_from_string('A') - 1] + "*/" + "\n")
+			self.PB_Signal_Routing_Table.append("/*" + self.validDataListList[index][self.sigValidHeaderList.index("SignalName")] + "*/" + "\n")
 		else:
 			# 如果列表为空，则以0，填充数组，以防工程编译时不通过.
 			if not self.PbSignalRoutingTableList:
@@ -693,56 +754,65 @@ class PbMsgSendTable(HexBase):
 		"""获取有效数据"""
 		# 深拷贝一份路由数据，不破坏原有数据
 		signalDataList = deepcopy(signalRoute.dataList)
+		signalHeaderList = deepcopy(signalRoute.headerList)
 
-		# 获取发送信号ID，并以ID大小进行排序
-		for subList in signalDataList:
-			txCanId = subList[column_index_from_string('C') - 1]
-			if txCanId not in self.txCanIdList:
-				self.txCanIdList.append(txCanId)
-		self.txCanIdList = sorted(self.txCanIdList, key=lambda txCanId:int(txCanId, 16))
-		# print(self.txCanIdList)
-
-		# 获取发送信号数据，先以周期进行排序的基础上以ID大小进行排序
-		for subList in signalDataList:
-			txList = [subList[column_index_from_string('C') - 1],
-					  subList[column_index_from_string('D') - 1],
-					  subList[column_index_from_string('E') - 1],
-					  subList[column_index_from_string('F') - 1],
-					  subList[column_index_from_string('P') - 1]]
-			if txList not in self.validDataList:
-				self.validDataList.append(txList)
-		self.validDataList = sorted(self.validDataList, key=lambda subList:[int(subList[1]), int(subList[0], 16)])
-		# print(self.validDataList)
-
-		# 然后根据已排序的发送信号ID获取对应的源信号，主要想获得对应数量
-		for txCanId in self.validDataList:
-			# 每一个发送ID对应的接收ID存储在一个列表中，最后再将对应所有接收数据存储在一个列表中
-			srcSignalList = []
+		if signalDataList:
+			# 获取发送信号ID，并以ID大小进行排序
 			for subList in signalDataList:
-				if subList[column_index_from_string('C') - 1] == txCanId[0]:
-					srcSignalList.append(subList)
-			# print(len(srcSignalList))
-			self.srcSignalListList.append(srcSignalList)
+				txCanId = subList[signalHeaderList.index("TxCANID")]
+				if txCanId not in self.txCanIdList:
+					self.txCanIdList.append(txCanId)
+			self.txCanIdList = sorted(self.txCanIdList, key=lambda txCanId:int(txCanId, 16))
+			# print(self.txCanIdList)
 
-		# 提取信号发送报文ID和对应源信号数量，并以ID大小进行排序
-		for index in range(len(self.validDataList)):
-			tmpList = [self.validDataList[index][0], str(len(self.srcSignalListList[index]))]
-			self.txCanIdrxCanIdCountList.append(tmpList)
-		self.txCanIdrxCanIdCountList = sorted(self.txCanIdrxCanIdCountList, key=lambda subList:int(subList[0], 16))
-		# print(self.txCanIdrxCanIdCountList)
+			# 提取信号有效头列表
+			self.sigValidHeaderList = [signalHeaderList[signalHeaderList.index("TxCANID")],\
+									   signalHeaderList[signalHeaderList.index("TxPeriod")],\
+									   signalHeaderList[signalHeaderList.index("TxDLC")],\
+									   signalHeaderList[signalHeaderList.index("TxChannle")],\
+									   signalHeaderList[signalHeaderList.index("ByteOrder")]]
 
-		# # 获取接收信号ID，并以ID大小排序，用于索引接收信号表(PbMsgRecvTable)的字节位位置
-		# for subList in signalDataList:
-		# 	rxCanId = subList[column_index_from_string('J') - 1]
-		# 	if rxCanId not in self.rxCanIdList:
-		# 		self.rxCanIdList.append(rxCanId)
-		# self.rxCanIdList = sorted(self.rxCanIdList, key=lambda rxCanId:int(rxCanId, 16))
-		# print(self.rxCanIdList)
+			# 获取发送信号数据，先以周期进行排序的基础上以ID大小进行排序
+			for subList in signalDataList:
+				txList = [subList[signalHeaderList.index("TxCANID")],
+						  subList[signalHeaderList.index("TxPeriod")],
+						  subList[signalHeaderList.index("TxDLC")],
+						  subList[signalHeaderList.index("TxChannle")],
+						  subList[signalHeaderList.index("ByteOrder")]]
+				if txList not in self.validDataList:
+					self.validDataList.append(txList)
+			self.validDataList = sorted(self.validDataList, key=lambda subList:[int(subList[self.sigValidHeaderList.index("TxPeriod")]), int(subList[self.sigValidHeaderList.index("TxCANID")], 16)])
+			# print(self.validDataList)
+
+			# 然后根据已排序的发送信号ID获取对应的源信号，主要想获得对应数量
+			for subvalidDataList in self.validDataList:
+				# 每一个发送ID对应的接收ID存储在一个列表中，最后再将对应所有接收数据存储在一个列表中
+				srcSignalList = []
+				for subList in signalDataList:
+					if subList[signalHeaderList.index("TxCANID")] == subvalidDataList[self.sigValidHeaderList.index("TxCANID")]:
+						srcSignalList.append(subList)
+				# print(len(srcSignalList))
+				self.srcSignalListList.append(srcSignalList)
+
+			# 提取信号发送报文ID和对应源信号数量，并以ID大小进行排序
+			for index in range(len(self.validDataList)):
+				tmpList = [self.validDataList[index][self.sigValidHeaderList.index("TxCANID")], str(len(self.srcSignalListList[index]))]
+				self.txCanIdrxCanIdCountList.append(tmpList)
+			self.txCanIdrxCanIdCountList = sorted(self.txCanIdrxCanIdCountList, key=lambda subList:int(subList[0], 16))
+			# print(self.txCanIdrxCanIdCountList)
+
+			# # 获取接收信号ID，并以ID大小排序，用于索引接收信号表(PbMsgRecvTable)的字节位位置
+			# for subList in signalDataList:
+			# 	rxCanId = subList[column_index_from_string('J') - 1]
+			# 	if rxCanId not in self.rxCanIdList:
+			# 		self.rxCanIdList.append(rxCanId)
+			# self.rxCanIdList = sorted(self.rxCanIdList, key=lambda rxCanId:int(rxCanId, 16))
+			# print(self.rxCanIdList)
 
 	# 计算发送信号对应的第一个源信号索引
 	def __calculate_first_source_index(self, index) -> str:
 		ret = 0
-		for i in range(self.txCanIdList.index(self.validDataList[index][0])):
+		for i in range(self.txCanIdList.index(self.validDataList[index][self.sigValidHeaderList.index("TxCANID")])):
 			ret += int(self.txCanIdrxCanIdCountList[i][1])
 
 		return str(ret)
@@ -752,11 +822,11 @@ class PbMsgSendTable(HexBase):
 		"""对发送信号ID进行处理，提取信号发送表的子元素"""
 		retList = []
 		
-		retList.append(self.validDataList[index][0] + 'u')
-		retList.append(self.validDataList[index][1] + 'u')
-		retList.append(self.validDataList[index][3] + 'u')
-		retList.append(self.validDataList[index][2] + 'u')
-		retList.append(self.validDataList[index][4] + 'u')
+		retList.append(self.validDataList[index][self.sigValidHeaderList.index("TxCANID")] + 'u')
+		retList.append(self.validDataList[index][self.sigValidHeaderList.index("TxPeriod")] + 'u')
+		retList.append(self.validDataList[index][self.sigValidHeaderList.index("TxChannle")] + 'u')
+		retList.append(self.validDataList[index][self.sigValidHeaderList.index("TxDLC")] + 'u')
+		retList.append(self.validDataList[index][self.sigValidHeaderList.index("ByteOrder")] + 'u')
 		retList.append(str(len(self.srcSignalListList[index])) + 'u')
 		retList.append(self.__calculate_first_source_index(index) + 'u')
 		retList.append('0u')
@@ -803,33 +873,38 @@ class PbMsgSrcTable(object):
 		"""获取有效数据"""
 		# 深拷贝一份路由数据，不破坏原有数据
 		signalDataList = deepcopy(signalRoute.dataList)
+		signalHeaderList = deepcopy(signalRoute.headerList)
+		if signalDataList:
+			# 提取信号有效头列表
+			self.sigValidHeaderList = [signalHeaderList[signalHeaderList.index("TxCANID")],\
+									   signalHeaderList[signalHeaderList.index("TxPeriod")]]
 
-		# 获取发送信号数据，先以周期进行排序的基础上以ID大小进行排序
-		for subList in signalDataList:
-			txList = [subList[column_index_from_string('C') - 1],
-					  subList[column_index_from_string('D') - 1]]
-			if txList not in self.txCanIdPeriodList:
-				self.txCanIdPeriodList.append(txList)
-		self.txCanIdPeriodList = sorted(self.txCanIdPeriodList, key=lambda subList:[int(subList[1]), int(subList[0], 16)])
-		# print(self.txCanIdPeriodList)
-
-		# 然后根据已排序的发送信号ID获取对应的源信号，主要想获得对应于源信号表中的索引
-		for txCanId in self.txCanIdPeriodList:
-			# 每一个发送ID对应的接收ID存储在一个列表中，最后再将对应所有接收数据存储在一个列表中
-			srcSignalList = []
+			# 获取发送信号数据，先以周期进行排序的基础上以ID大小进行排序
 			for subList in signalDataList:
-				if subList[column_index_from_string('C') - 1] == txCanId[0]:
-					srcSignalList.append(subList[column_index_from_string('J') - 1])
-			srcSignalList = sorted(list(set(srcSignalList)), key=lambda srcSignal:int(srcSignal, 16))
-			# print(srcSignalList)
-			self.srcSignalListList.append(srcSignalList)
+				txList = [subList[signalHeaderList.index("TxCANID")],
+						  subList[signalHeaderList.index("TxPeriod")]]
+				if txList not in self.txCanIdPeriodList:
+					self.txCanIdPeriodList.append(txList)
+			self.txCanIdPeriodList = sorted(self.txCanIdPeriodList, key=lambda subList:[int(subList[self.sigValidHeaderList.index("TxPeriod")]), int(subList[self.sigValidHeaderList.index("TxCANID")], 16)])
+			# print(self.txCanIdPeriodList)
 
-		# 获取所有源信号并以ID大小进行排序
-		for subList in signalDataList:
-			tmpSrcId = subList[column_index_from_string('J') - 1]
-			if tmpSrcId not in self.recvSignalList:
-				self.recvSignalList.append(tmpSrcId)
-		self.recvSignalList = sorted(self.recvSignalList, key=lambda tmpSrcId:int(tmpSrcId, 16))
+			# 然后根据已排序的发送信号ID获取对应的源信号，主要想获得对应于源信号表中的索引
+			for txCanId in self.txCanIdPeriodList:
+				# 每一个发送ID对应的接收ID存储在一个列表中，最后再将对应所有接收数据存储在一个列表中
+				srcSignalList = []
+				for subList in signalDataList:
+					if subList[signalHeaderList.index("TxCANID")] == txCanId[self.sigValidHeaderList.index("TxCANID")]:
+						srcSignalList.append(subList[signalHeaderList.index("RxCANID")])
+				srcSignalList = sorted(list(set(srcSignalList)), key=lambda srcSignal:int(srcSignal, 16))
+				# print(srcSignalList)
+				self.srcSignalListList.append(srcSignalList)
+
+			# 获取所有源信号并以ID大小进行排序
+			for subList in signalDataList:
+				tmpSrcId = subList[signalHeaderList.index("RxCANID")]
+				if tmpSrcId not in self.recvSignalList:
+					self.recvSignalList.append(tmpSrcId)
+			self.recvSignalList = sorted(self.recvSignalList, key=lambda tmpSrcId:int(tmpSrcId, 16))
 
 	def __src_signal_index_data_handling(self, index):
 		"""对发送信号对应的源信号在源信号中的索引进行处理"""
@@ -896,16 +971,22 @@ class PbMsgSendSchedule(HexBase):
 		"""获取有效数据"""
 		# 深拷贝一份路由数据，不破坏原有数据
 		signalDataList = deepcopy(signalRoute.dataList)
+		signalHeaderList = deepcopy(signalRoute.headerList)
 
-		# 获取发送信号数据，先以周期进行排序的基础上以ID大小进行排序
-		for subList in signalDataList:
-			txList = [subList[column_index_from_string('C') - 1],
-					  subList[column_index_from_string('D') - 1]]
-			if txList not in self.txCanIdPeriodList:
-				self.txCanIdPeriodList.append(txList)
-		self.txCanIdPeriodList = sorted(self.txCanIdPeriodList, key=lambda subList:[int(subList[1]), int(subList[0], 16)])
-		# print(self.txCanIdPeriodList)
-		# print(len(self.txCanIdPeriodList))
+		if signalDataList:
+			# 提取信号有效头列表
+			self.sigValidHeaderList = [signalHeaderList[signalHeaderList.index("TxCANID")],\
+									   signalHeaderList[signalHeaderList.index("TxPeriod")]]
+
+			# 获取发送信号数据，先以周期进行排序的基础上以ID大小进行排序
+			for subList in signalDataList:
+				txList = [subList[signalHeaderList.index("TxCANID")],
+						  subList[signalHeaderList.index("TxPeriod")]]
+				if txList not in self.txCanIdPeriodList:
+					self.txCanIdPeriodList.append(txList)
+			self.txCanIdPeriodList = sorted(self.txCanIdPeriodList, key=lambda subList:[int(subList[1]), int(subList[0], 16)])
+			# print(self.txCanIdPeriodList)
+			# print(len(self.txCanIdPeriodList))
 
 	def data_handle(self):
 		"""数据处理"""
@@ -923,7 +1004,7 @@ class PbMsgSendSchedule(HexBase):
 				self.PbMsgSendSchedule[index%10][(index//10)*2 + 1] = hex(index)[0:2] + '0' + hex(index)[2] + 'u'
 			else:
 				self.PbMsgSendSchedule[index%10][(index//10)*2 + 1] = hex(index) + 'u'
-			self.PbMsgSendSchedule[index%10][(index//10)*2 + 2] = str(int(self.txCanIdPeriodList[index][1])//10) + 'u'
+			self.PbMsgSendSchedule[index%10][(index//10)*2 + 2] = str(int(self.txCanIdPeriodList[index][self.sigValidHeaderList.index("TxPeriod")])//10) + 'u'
 
 		# print(self.PbMsgSendSchedule)
 
@@ -957,16 +1038,20 @@ class PbMsgRevInitDefaultValBase(object):
 		"""获取有效数据"""
 		# 深拷贝一份路由数据，不破坏原有数据
 		signalDataList = deepcopy(signalRoute.dataList)
+		signalHeaderList = deepcopy(signalRoute.headerList)
+		if signalDataList:
+			# 提取信号有效头列表
+			self.sigValidHeaderList = signalHeaderList
 
-		for subList in signalDataList:
-			tmpList = [subList[column_index_from_string('J') - 1],
-					   subList[column_index_from_string('M') - 1]]
-			if tmpList not in self.srcSignalInfoList:
-				self.srcSignalInfoList.append(tmpList)
-			self.validDataList.append(subList)
-		self.srcSignalInfoList = sorted(self.srcSignalInfoList, key=lambda subList:int(subList[0], 16))
-		# print(self.srcSignalInfoList)
-		# print(len(self.srcSignalInfoList))
+			for subList in signalDataList:
+				tmpList = [subList[signalHeaderList.index("RxCANID")],
+						   subList[signalHeaderList.index("RxChannel")]]
+				if tmpList not in self.srcSignalInfoList:
+					self.srcSignalInfoList.append(tmpList)
+				self.validDataList.append(subList)
+			self.srcSignalInfoList = sorted(self.srcSignalInfoList, key=lambda subList:int(subList[0], 16))
+			# print(self.srcSignalInfoList)
+			# print(len(self.srcSignalInfoList))
 
 	def calc_signa_val(self, signalVal, startByte, startBit, signalLen, byteorder) -> list:
 		"""计算信号值"""
@@ -1019,13 +1104,13 @@ class PbMsgRevInitVal(PbMsgRevInitDefaultValBase, HexBase):
 
 		# 轮询全部信号列表数据
 		for subList in self.validDataList:
-			index = self.srcSignalInfoList.index([subList[column_index_from_string('J') - 1], subList[column_index_from_string('M') - 1]])
+			index = self.srcSignalInfoList.index([subList[self.sigValidHeaderList.index("RxCANID")], subList[self.sigValidHeaderList.index("RxChannel")]])
 			# 计算每一行信号数据单元对应的值
-			colDataList = self.calc_signa_val(subList[column_index_from_string('R') - 1],\
-												int(subList[column_index_from_string('N') - 1])//8,\
-												int(subList[column_index_from_string('N') - 1])%8,\
-												subList[column_index_from_string('O') - 1],\
-												subList[column_index_from_string('P') - 1])
+			colDataList = self.calc_signa_val(subList[self.sigValidHeaderList.index("inival")],\
+												int(subList[self.sigValidHeaderList.index("RxStartBit")])//8,\
+												int(subList[self.sigValidHeaderList.index("RxStartBit")])%8,\
+												subList[self.sigValidHeaderList.index("RxSigLen")],\
+												subList[self.sigValidHeaderList.index("ByteOrder")])
 			# 将获得的每一行信号数据单元的值与与初始值列表对应的源信号ID初始值进行位或
 			for i in range(8):
 				self.PbMsgRevInitValList[index][i] |= colDataList[i]
@@ -1078,13 +1163,13 @@ class PbMsgRevDefaultVal(PbMsgRevInitDefaultValBase, HexBase):
 
 		# 轮询全部信号列表数据
 		for subList in self.validDataList:
-			index = self.srcSignalInfoList.index([subList[column_index_from_string('J') - 1], subList[column_index_from_string('M') - 1]])
+			index = self.srcSignalInfoList.index([subList[self.sigValidHeaderList.index("RxCANID")], subList[self.sigValidHeaderList.index("RxChannel")]])
 			# 计算每一行信号数据单元对应的值
-			colDataList = self.calc_signa_val(subList[column_index_from_string('S') - 1],\
-												int(subList[column_index_from_string('N') - 1])//8,\
-												int(subList[column_index_from_string('N') - 1])%8,\
-												subList[column_index_from_string('O') - 1],\
-												subList[column_index_from_string('P') - 1])
+			colDataList = self.calc_signa_val(subList[self.sigValidHeaderList.index("dfVal")],\
+												int(subList[self.sigValidHeaderList.index("RxStartBit")])//8,\
+												int(subList[self.sigValidHeaderList.index("RxStartBit")])%8,\
+												subList[self.sigValidHeaderList.index("RxSigLen")],\
+												subList[self.sigValidHeaderList.index("ByteOrder")])
 			# 将获得的每一行信号数据单元的值与与初始值列表对应的源信号ID初始值进行位或
 			for i in range(8):
 				self.PbMsgRevDefaultVal[index][i] |= colDataList[i]
@@ -1122,6 +1207,10 @@ class Id2IndexTable(RoutingTable, HexBase):
 		self.msgDesChListISR = []
 		self.signalValidDataList = []
 		self.routerTableList = []
+		self.routerTableListHeader = ["RxCANID", "dest_mo_num", "src_ecu_node", "valid_flg_index", "DLC", "dest_mo_index1", "dest_mo_condition1",\
+									  "dest_mo_index2", "dest_mo_condition2", "dest_mo_index3", "dest_mo_condition3", "dest_mo_index4", "dest_mo_condition4",\
+									  "dest_mo_index5", "dest_mo_condition5", "cycle", "msg_index", "buf_index", "pre_callback", "post_callback",\
+									  "RxInterrupt", "RxDTC", "RxChannel"]
 		self.routerTableISRList = []
 		self.routerTableFIFOList = []
 		self.PB_MsgRoutingTable = []
@@ -1172,22 +1261,28 @@ class Id2IndexTable(RoutingTable, HexBase):
 
 		# 将ID单独提取出来，用于后面获取索引
 		for subList in self.routerTableFIFOList:
-			self.idList.append((subList[0], subList[-1]))
+			self.idList.append((subList[self.routerTableListHeader.index("RxCANID")], subList[self.routerTableListHeader.index("RxChannel")]))
 
 		# 轮询所有轮询发送的报文，获得索引值
 		for subList in self.routerTableFIFOList:
 			if subList[-1] == '1':
-				self.id2IndexTableA[int(subList[0], 16)] = "0x{0:04X}u".format(self.idList.index((subList[0], subList[-1])))
+				self.id2IndexTableA[int(subList[self.routerTableListHeader.index("RxCANID")], 16)] = \
+				"0x{0:04X}u".format(self.idList.index((subList[self.routerTableListHeader.index("RxCANID")], subList[self.routerTableListHeader.index("RxChannel")])))
 			elif subList[-1] == '2':
-				self.id2IndexTableB[int(subList[0], 16)] = "0x{0:04X}u".format(self.idList.index((subList[0], subList[-1])))
+				self.id2IndexTableB[int(subList[self.routerTableListHeader.index("RxCANID")], 16)] = \
+				"0x{0:04X}u".format(self.idList.index((subList[self.routerTableListHeader.index("RxCANID")], subList[self.routerTableListHeader.index("RxChannel")])))
 			elif subList[-1] == '3':
-				self.id2IndexTableC[int(subList[0], 16)] = "0x{0:04X}u".format(self.idList.index((subList[0], subList[-1])))
+				self.id2IndexTableC[int(subList[self.routerTableListHeader.index("RxCANID")], 16)] = \
+				"0x{0:04X}u".format(self.idList.index((subList[self.routerTableListHeader.index("RxCANID")], subList[self.routerTableListHeader.index("RxChannel")])))
 			elif subList[-1] == '4':
-				self.id2IndexTableD[int(subList[0], 16)] = "0x{0:04X}u".format(self.idList.index((subList[0], subList[-1])))
+				self.id2IndexTableD[int(subList[self.routerTableListHeader.index("RxCANID")], 16)] = \
+				"0x{0:04X}u".format(self.idList.index((subList[self.routerTableListHeader.index("RxCANID")], subList[self.routerTableListHeader.index("RxChannel")])))
 			elif subList[-1] == '5':
-				self.id2IndexTableE[int(subList[0], 16)] = "0x{0:04X}u".format(self.idList.index((subList[0], subList[-1])))
+				self.id2IndexTableE[int(subList[self.routerTableListHeader.index("RxCANID")], 16)] = \
+				"0x{0:04X}u".format(self.idList.index((subList[self.routerTableListHeader.index("RxCANID")], subList[self.routerTableListHeader.index("RxChannel")])))
 			elif subList[-1] == '6':
-				self.id2IndexTableF[int(subList[0], 16)] = "0x{0:04X}u".format(self.idList.index((subList[0], subList[-1])))
+				self.id2IndexTableF[int(subList[self.routerTableListHeader.index("RxCANID")], 16)] = \
+				"0x{0:04X}u".format(self.idList.index((subList[self.routerTableListHeader.index("RxCANID")], subList[self.routerTableListHeader.index("RxChannel")])))
 
 		# print(self.id2IndexTableA)
 		# print(self.id2IndexTableB)

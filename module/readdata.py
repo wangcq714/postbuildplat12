@@ -13,6 +13,8 @@ class RouterTable(object):
 		self.pathName = askopenfilename(filetypes = [("Excel",".csv")])
 		if self.pathName == ():
 			self.pathName = ""
+			self.headerList = []
+			self.dataList = []
 		# print(self.pathName)
 		# print(type(self.pathName))
 
@@ -21,6 +23,11 @@ class RouterTable(object):
 		if self.pathName != "":
 			dataFrame = read_csv(self.pathName, header=None, na_values="", usecols=[i for i in range(column_index_from_string(row))])
 			self.dataList = dataFrame.fillna("None").values[1:].tolist()
+			self.headerList = dataFrame.fillna("None").values[:1].tolist()[0]
+			# print(self.headerList)
+		else:
+			self.headerList = []
+			self.dataList = []
 
 
 # 普通报文类
@@ -28,6 +35,7 @@ class MsgRoute(RouterTable):
 	"""普通报文信息"""
 	def __init__(self):
 		self.pathName = ""
+		self.headerList = []
 		self.dataList = []
 
 
@@ -36,6 +44,7 @@ class SignalRoute(RouterTable):
 	"""信号报文信息"""
 	def __init__(self):
 		self.pathName = ""
+		self.headerList = []
 		self.dataList = []
 
 
