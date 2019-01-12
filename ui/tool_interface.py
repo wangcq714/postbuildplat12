@@ -1,7 +1,7 @@
 from tkinter import Toplevel, Label, Button, StringVar, Entry, W
 from tkinter import messagebox
 from tool import public4all
-from tool import sig2pbsig
+from tool import sig2pbsig, msg2pbmsg
 
 class BoxWindow(object):
 	'''工具窗口'''
@@ -87,7 +87,15 @@ class BoxWindow(object):
 
 	def postbuild_msg_table_callback(self):
 		'''生成postbuil工具所用报文表'''
-		pass
+		if hasattr(self, "public_for_all"):
+			if self.public_for_all.pathname != "":
+				msg = msg2pbmsg.MsgTableConvert()
+				msg.pathname = self.public_for_all.pathname
+				try:
+					msg.main_pandas()
+					messagebox.showinfo(title='提示', message='转换完成')
+				except:
+					messagebox.showinfo(title='提示', message='转换出错，请检查表格信息')
 
 	def postbuild_sig_table_callback(self):
 		'''生成postbuil工具所用信号表'''
@@ -120,7 +128,9 @@ class BoxWindow(object):
 
 	def help_callback(self):
 		'''帮助'''
-		pass
+		ret = messagebox.askquestion(title='Help', message='这么简单还需要帮助？！！！')
+		if ret == "yes":
+			messagebox.showinfo(title='Help', message='哈哈哈 逗你呢 并没有什么帮助')
 
 	def back_callback(self):
 		'''帮助'''

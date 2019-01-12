@@ -102,12 +102,14 @@ class Register(object):
    
     # 获得机器码
     def getmachinecode(self):
-        mac = self.get_network_info()
-        cpu_serial_no = self.get_CPU_info()
+        # mac = self.get_network_info()
+        mac = ""
+        # cpu_serial_no = self.get_CPU_info()
+        cpu_serial_no = ""
         disk_seral_no = self.get_disk_info()
         mainboard_seral_no = self.get_mainboard_info()
         machinecode_str = ""
-        machinecode_str = machinecode_str + cpu_serial_no + cpu_serial_no + disk_seral_no + mainboard_seral_no
+        machinecode_str = machinecode_str + mac + cpu_serial_no + disk_seral_no + mainboard_seral_no
         # selectindex=[15,30,32,38,43,46]
         # macode=""
         # for i in selectindex:

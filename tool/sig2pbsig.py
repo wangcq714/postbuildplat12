@@ -223,7 +223,7 @@ class SignalTableConvert(object):
 			self.build_des_table()
 
 			# 将目标表数据写入CSV文件中
-			with open(self.pathname[:self.pathname.rfind('/')+1] + "SignalRoute.csv", 'w') as csvfile:	
+			with open(self.pathname[:self.pathname.rfind('/')+1] + "SignalRoute.csv", 'w', newline='') as csvfile:	
 				writer = csv.writer(csvfile)
 				#写入文件头
 				writer.writerow(self.TableHeader)
