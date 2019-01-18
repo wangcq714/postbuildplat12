@@ -3,9 +3,9 @@
 
 # import sys
 
-from openpyxl import load_workbook
+# from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter, column_index_from_string
-from openpyxl import Workbook
+# from openpyxl import Workbook
 import csv
 #from tkinter import *
 from tkinter.filedialog import askopenfilename

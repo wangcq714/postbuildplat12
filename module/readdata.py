@@ -1,5 +1,6 @@
 # import pandas
 from pandas import read_csv
+import numpy
 
 from tkinter.filedialog import askopenfilename
 from openpyxl.utils import get_column_letter, column_index_from_string

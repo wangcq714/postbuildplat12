@@ -1,7 +1,7 @@
 from tkinter import Toplevel, Label, Button, StringVar, Entry, W
 from tkinter import messagebox
 from tool import public4all
-from tool import sig2pbsig, msg2pbmsg
+from tool import sig2pbsig, msg2pbmsg, diagreqmsgcfg
 
 class BoxWindow(object):
 	'''工具窗口'''
@@ -120,7 +120,15 @@ class BoxWindow(object):
 
 	def diag_req_table_callback(self):
 		'''生成诊断请求表'''
-		pass
+		if hasattr(self, "public_for_all"):
+			if self.public_for_all.pathname != "":
+				diag_req = diagreqmsgcfg.DiagReqTable()
+				diag_req.pathname = self.public_for_all.pathname
+				try:
+					diag_req.main()
+					messagebox.showinfo(title='提示', message='转换完成')
+				except:
+					messagebox.showinfo(title='提示', message='转换出错，请检查表格信息')
 
 	def diag_res_table_callback(self):
 		'''生成诊断响应表（硬件转发）'''
