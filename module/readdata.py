@@ -21,14 +21,14 @@ class RouterTable(object):
 
 	def read_data(self, row:str):
 		"""从路由表中读取数据"""
+		self.headerList = []
+		self.dataList = []
 		if self.pathName != "":
 			dataFrame = read_csv(self.pathName, header=None, na_values="", usecols=[i for i in range(column_index_from_string(row))])
 			self.dataList = dataFrame.fillna("None").values[1:].tolist()
 			self.headerList = dataFrame.fillna("None").values[:1].tolist()[0]
-			# print(self.headerList)
-		else:
-			self.headerList = []
-			self.dataList = []
+		# print(self.headerList)
+		# print(self.dataList)
 
 
 # 普通报文类
@@ -70,16 +70,18 @@ class ReadHex(object):
 		self.pathName = askopenfilename(filetypes = [("hex",".hex")])
 		if self.pathName == ():
 			self.pathName = ""
+			self.hexData = []
 		# print(self.pathName) 
 
 	def read_hex(self):
 		"""读取hex"""
+		self.hexData = []
 		if self.pathName != "":
 			with open(self.pathName, "r") as hexf:
 				for colData in hexf:
 					self.hexData.append(colData)
 
-			# print(self.hexData[0:10])
+			print(self.hexData[0:10])
 
 
 if __name__ == '__main__':

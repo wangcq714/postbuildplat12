@@ -65,18 +65,19 @@ class FileDecryption(object):
 
 	def file_decryption(self, dataList):
 		'''对读取的数据进行加密, dataList:字符串列表'''
-		retData = []
-		for subdata in dataList:
-			retData.append(self.decrypting(subdata[:-1]) + subdata[-1])
-
-		return retData
+		# with open("decrypt_test.hex", "w") as file:
+		for i in range(len(dataList)):
+			dataList[i] = self.decrypting(dataList[i][:-1]) + dataList[i][-1]
+				# file.write(dataList[i])
 				
 
 if __name__ == '__main__':
 	fileEncryption = FileEncryption()
 	fileEncryption.get_file_pathname()
 	fileEncryption.read_file()
-	fileEncryption.file_encryption()
+	# fileEncryption.file_encryption()
+	fileDecryption = FileDecryption()
+	fileDecryption.file_decryption(fileEncryption.original_data)
 
 	print("-----------------END-----------------------")
 

@@ -5,14 +5,18 @@ from tool import sig2pbsig, msg2pbmsg, diagreqmsgcfg
 
 class BoxWindow(object):
 	'''工具窗口'''
-	def __init__(self, main_window):
+	def __init__(self, main_window, user_type):
 		'''初始化'''
 		self.box_window = Toplevel()
 		self.main_window = main_window
+		self.user_type = user_type
 
 	def boxwin_setup(self):
-		self.box_window.title("Tool")
-		self.box_window.geometry('550x350')                 #是x 不是*
+		self.box_window.title("百宝箱")
+		if self.user_type == "Customer":
+			self.box_window.geometry('550x200')                 #是x 不是*
+		elif self.user_type == "Developer":
+			self.box_window.geometry('550x350')
 		self.box_window.resizable(width=False, height=False) #宽不可变, 高可变, 默认为True
 
 		# 报文显示
@@ -34,34 +38,41 @@ class BoxWindow(object):
 												fg="black", activeforeground="black", font=("楷体", 9), width=20, height=2, command=self.postbuild_sig_table_callback)
 		self.hex_select_buntton.place(x=300, y=80)
 
-		# DTC配置表
-		self.signaltable_select_buntton = Button(self.box_window, text="DTC配置表", bg="lightgreen", activebackground="gold", \
-												fg="black", activeforeground="black", font=("楷体", 9), width=20, height=2, command=self.dtc_cfg_table_callback)
-		self.signaltable_select_buntton.place(x=100, y=140)
+		if self.user_type == "Developer":
+			# DTC配置表
+			self.signaltable_select_buntton = Button(self.box_window, text="DTC配置表", bg="lightgreen", activebackground="gold", \
+													fg="black", activeforeground="black", font=("楷体", 9), width=20, height=2, command=self.dtc_cfg_table_callback)
+			self.signaltable_select_buntton.place(x=100, y=140)
 
-		# 节点使能配置表
-		self.hex_select_buntton = Button(self.box_window, text="节点使能配置表", bg="lightgreen", activebackground="gold", \
-												fg="black", activeforeground="black", font=("楷体", 9), width=20, height=2, command=self.node_en_cfg_table_callback)
-		self.hex_select_buntton.place(x=300, y=140)
+			# 节点使能配置表
+			self.hex_select_buntton = Button(self.box_window, text="节点使能配置表", bg="lightgreen", activebackground="gold", \
+													fg="black", activeforeground="black", font=("楷体", 9), width=20, height=2, command=self.node_en_cfg_table_callback)
+			self.hex_select_buntton.place(x=300, y=140)
 
-		# DTC配置表
-		self.signaltable_select_buntton = Button(self.box_window, text="诊断请求表", bg="lightgreen", activebackground="gold", \
-												fg="black", activeforeground="black", font=("楷体", 9), width=20, height=2, command=self.diag_req_table_callback)
-		self.signaltable_select_buntton.place(x=100, y=200)
+			# DTC配置表
+			self.signaltable_select_buntton = Button(self.box_window, text="诊断请求表", bg="lightgreen", activebackground="gold", \
+													fg="black", activeforeground="black", font=("楷体", 9), width=20, height=2, command=self.diag_req_table_callback)
+			self.signaltable_select_buntton.place(x=100, y=200)
 
-		# 节点使能配置表
-		self.hex_select_buntton = Button(self.box_window, text="诊断响应表", bg="lightgreen", activebackground="gold", \
-												fg="black", activeforeground="black", font=("楷体", 9), width=20, height=2, command=self.diag_res_table_callback)
-		self.hex_select_buntton.place(x=300, y=200)
+			# 节点使能配置表
+			self.hex_select_buntton = Button(self.box_window, text="诊断响应表", bg="lightgreen", activebackground="gold", \
+													fg="black", activeforeground="black", font=("楷体", 9), width=20, height=2, command=self.diag_res_table_callback)
+			self.hex_select_buntton.place(x=300, y=200)
 
 		# 帮助
 		self.help = Button(self.box_window, text="帮助", bg="lightgreen", activebackground="gold", \
 							fg="black", activeforeground="black", font=("楷体", 9), width=12, height=2, command=self.help_callback)
-		self.help.place(x=120, y=280)
+		if self.user_type == "Customer":
+			self.help.place(x=120, y=140)
+		elif self.user_type == "Developer":
+			self.help.place(x=120, y=280)
 		# 退出
 		self.exit = Button(self.box_window, text="退出", bg="lightgreen", activebackground="gold", \
 							fg="black", activeforeground="black", font=("楷体", 9), width=12, height=2, command=self.back_callback)
-		self.exit.place(x=325, y=280)
+		if self.user_type == "Customer":
+			self.exit.place(x=325, y=140)
+		elif self.user_type == "Developer":
+			self.exit.place(x=325, y=280)
 		# 
 		# self.help = Button(self.box_window, text="帮助", bg="lightgreen", activebackground="gold", \
 		# 					fg="black", activeforeground="black", font=("楷体", 9), width=12, height=2)

@@ -1,3 +1,5 @@
+from platform import system
+
 class WriteData(object):
 	"""write"""
 	def __init__(self):
@@ -71,11 +73,14 @@ class WriteData(object):
 		"""写hex文件"""
 		if dataList != []:
 			self.checksum(dataList)
+			print(dataList[0:10])
 			with open("output/kanwairen.hex",'w') as hexf:
 				for tmp in dataList:
-					hexf.write(tmp[0:-1])
-					hexf.write("\r\n")
-					# hexf.write(tmp)
+					if system() == "Linux":
+						hexf.write(tmp[0:-1])
+						hexf.write("\r\n")
+					elif system() == "Windows":
+						hexf.write(tmp)
 
 
 

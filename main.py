@@ -6,13 +6,18 @@ from register import register
 from header import id2indextableheader
 from header import projcancfgheader
 from header import projpostbuildcfgheader
+from fileencryption import fileencryption
 
 
-def run(msgRoute, signalRoute, readHex):
+def run(msgRoute, signalRoute, readHex, user_type):
 	# 读取数据
 	msgRoute.read_data("O")
 	signalRoute.read_data("T")
 	readHex.read_hex()
+
+	# 加密hex文件解密(此处耗时会很长)
+	fileDecryption = fileencryption.FileDecryption()
+	fileDecryption.file_decryption(readHex.hexData)
 
 	# 中断MO初始化表
 	canFullIdNameISR = buildtable.CanFullIdNameISR()
@@ -122,65 +127,67 @@ def run(msgRoute, signalRoute, readHex):
 	# 创建写文件对象
 	writeData = writedata.WriteData()	
 
-	# 写入Table.c文件
-	writeData.write_table_c(canFullIdNameISR.CAN_FULL_ID_NAME_ISR)
-	writeData.write_table_c(pbDirectRoutingTable.PB_DirectRoutingTable)
-	writeData.write_table_c(pbMsgRoutingTable.PB_MsgRoutingTable)
-	writeData.write_table_c(pbMsgRecvTable.PB_Msg_Recv_Table)
-	writeData.write_table_c(pbSignalRoutingTable.PB_Signal_Routing_Table)
-	writeData.write_table_c(pbMsgSendTable.PB_Msg_Send_Table)
-	writeData.write_table_c(pbMsgSrcTable.PB_Msg_Src_Table)
-	writeData.write_table_c(pbMsgSendSchedule.PB_Msg_Send_Schedule)
-	# writeData.write_table_c(id2IndexTable.id2index_table_a)
-	# writeData.write_table_c(id2IndexTable.id2index_table_b)
-	# writeData.write_table_c(id2IndexTable.id2index_table_c)
-	# writeData.write_table_c(id2IndexTable.id2index_table_d)
-	# writeData.write_table_c(id2IndexTable.id2index_table_e)
-	# writeData.write_table_c(id2IndexTable.id2index_table_f)
-	writeData.write_table_c(pbMsgRevInitVal.PB_MsgRevInitVal)
-	writeData.write_table_c(pbMsgRevDefaultVal.PB_MsgRevDefaultVal)
-	writeData.write_table_c(id2IndexTable.id2index_table_a)
-	writeData.write_table_c(id2IndexTable.id2index_table_b)
-	writeData.write_table_c(id2IndexTable.id2index_table_c)
-	writeData.write_table_c(id2IndexTable.id2index_table_d)
-	writeData.write_table_c(id2IndexTable.id2index_table_e)
-	writeData.write_table_c(id2IndexTable.id2index_table_f)
+	# 只有当用户模式为开发者模式时才会生成配置表文件；客户模式下只可操作加密hex.
+	if user_type == "Developer":
+		# 写入Table.c文件
+		writeData.write_table_c(canFullIdNameISR.CAN_FULL_ID_NAME_ISR)
+		writeData.write_table_c(pbDirectRoutingTable.PB_DirectRoutingTable)
+		writeData.write_table_c(pbMsgRoutingTable.PB_MsgRoutingTable)
+		writeData.write_table_c(pbMsgRecvTable.PB_Msg_Recv_Table)
+		writeData.write_table_c(pbSignalRoutingTable.PB_Signal_Routing_Table)
+		writeData.write_table_c(pbMsgSendTable.PB_Msg_Send_Table)
+		writeData.write_table_c(pbMsgSrcTable.PB_Msg_Src_Table)
+		writeData.write_table_c(pbMsgSendSchedule.PB_Msg_Send_Schedule)
+		# writeData.write_table_c(id2IndexTable.id2index_table_a)
+		# writeData.write_table_c(id2IndexTable.id2index_table_b)
+		# writeData.write_table_c(id2IndexTable.id2index_table_c)
+		# writeData.write_table_c(id2IndexTable.id2index_table_d)
+		# writeData.write_table_c(id2IndexTable.id2index_table_e)
+		# writeData.write_table_c(id2IndexTable.id2index_table_f)
+		writeData.write_table_c(pbMsgRevInitVal.PB_MsgRevInitVal)
+		writeData.write_table_c(pbMsgRevDefaultVal.PB_MsgRevDefaultVal)
+		writeData.write_table_c(id2IndexTable.id2index_table_a)
+		writeData.write_table_c(id2IndexTable.id2index_table_b)
+		writeData.write_table_c(id2IndexTable.id2index_table_c)
+		writeData.write_table_c(id2IndexTable.id2index_table_d)
+		writeData.write_table_c(id2IndexTable.id2index_table_e)
+		writeData.write_table_c(id2IndexTable.id2index_table_f)
 
-	writeData.write_id2index_table_c(id2indextableheader.id2indextable_headerList, id2IndexTable.id2index_table)
-	
-	# 写入中断初始化文件Proj_Can_Cfg.c
-	writeData.write_proj_can_cfg_c(projcancfgheader.projcancfg_headerList, canFullIdNameISR.CAN_FULL_ID_NAME_ISR)
+		writeData.write_id2index_table_c(id2indextableheader.id2indextable_headerList, id2IndexTable.id2index_table)
+		
+		# 写入中断初始化文件Proj_Can_Cfg.c
+		writeData.write_proj_can_cfg_c(projcancfgheader.projcancfg_headerList, canFullIdNameISR.CAN_FULL_ID_NAME_ISR)
 
-	# 写入Proj_PostBuild_Cfg.c
-	writeData.write_proj_postbuild_cfg_c(projpostbuildcfgheader.projpostbuildcfg_headerList)
-	writeData.write_proj_postbuild_cfg_c(pbDirectRoutingTable.PB_DirectRoutingTable)
-	writeData.write_proj_postbuild_cfg_c(pbMsgRoutingTable.PB_MsgRoutingTable)
-	writeData.write_proj_postbuild_cfg_c(pbMsgRecvTable.PB_Msg_Recv_Table)
-	writeData.write_proj_postbuild_cfg_c(pbSignalRoutingTable.PB_Signal_Routing_Table)
-	writeData.write_proj_postbuild_cfg_c(pbMsgSendTable.PB_Msg_Send_Table)
-	writeData.write_proj_postbuild_cfg_c(pbMsgSendSchedule.PB_Msg_Send_Schedule)
-	writeData.write_proj_postbuild_cfg_c(pbMsgRevInitVal.PB_MsgRevInitVal)
-	writeData.write_proj_postbuild_cfg_c(pbMsgRevDefaultVal.PB_MsgRevDefaultVal)
-	writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_a)
-	writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_b)
-	writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_c)
-	writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_d)
-	writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_e)
-	writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_f)
+		# 写入Proj_PostBuild_Cfg.c
+		writeData.write_proj_postbuild_cfg_c(projpostbuildcfgheader.projpostbuildcfg_headerList)
+		writeData.write_proj_postbuild_cfg_c(pbDirectRoutingTable.PB_DirectRoutingTable)
+		writeData.write_proj_postbuild_cfg_c(pbMsgRoutingTable.PB_MsgRoutingTable)
+		writeData.write_proj_postbuild_cfg_c(pbMsgRecvTable.PB_Msg_Recv_Table)
+		writeData.write_proj_postbuild_cfg_c(pbSignalRoutingTable.PB_Signal_Routing_Table)
+		writeData.write_proj_postbuild_cfg_c(pbMsgSendTable.PB_Msg_Send_Table)
+		writeData.write_proj_postbuild_cfg_c(pbMsgSendSchedule.PB_Msg_Send_Schedule)
+		writeData.write_proj_postbuild_cfg_c(pbMsgRevInitVal.PB_MsgRevInitVal)
+		writeData.write_proj_postbuild_cfg_c(pbMsgRevDefaultVal.PB_MsgRevDefaultVal)
+		writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_a)
+		writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_b)
+		writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_c)
+		writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_d)
+		writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_e)
+		writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_f)
 
-
+	# 写入hex
 	writeData.write_hex(readHex.hexData)
 
 	
 
 	print("------------------END-------------------")
 
-def ui_main_client():
-	"""客户版"""
-	pass
 
-def ui_main_develop():
-	'''开发版'''
+def ui_main():
+	'''UI版'''
+	# 配置用户模式
+	user_type = "Developer"
+	# user_type = "Customer"
 	# 创建普通报文对象
 	msgRoute = readdata.MsgRoute()
 	# 创建信号报文对象
@@ -190,13 +197,17 @@ def ui_main_develop():
 	# 创建一个校验是否注册类
 	reg = register.Register()
 	# 创建一个界面类
-	my_main_window = ui.MyWindow(msgRoute, signalRoute, readHex, reg, run)
+	my_main_window = ui.MyWindow(msgRoute, signalRoute, readHex, reg, run, user_type)
 	# 初始会主界面参数
 	my_main_window.setup()
 	# 主界面显示
 	my_main_window.show()
 
 def cmd_main():
+	'''命令行版'''
+	# 配置用户模式
+	# user_type = "Developer"
+	user_type = "Customer"
 	# 创建普通报文对象
 	msgRoute = readdata.MsgRoute()
 	msgRoute.get_file_pathname()
@@ -209,9 +220,9 @@ def cmd_main():
 	readHex = readdata.ReadHex()
 	readHex.get_file_pathname()
 
-	run(msgRoute, signalRoute, readHex)
+	run(msgRoute, signalRoute, readHex, user_type)
 
 
 if __name__ == '__main__':
 	# cmd_main()
-	ui_main_develop()
+	ui_main()

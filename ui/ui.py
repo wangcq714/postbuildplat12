@@ -10,7 +10,10 @@ class MainWindow(object):
 
 	def setup(self):
 		"""主界面参数配置"""
-		self.window.title("PostBuild(开发版) kanwairen")
+		if self.user_type == "Customer":
+			self.window.title("PostBuildTool(客户版)  Kanwairen")
+		elif self.user_type == "Developer":
+			self.window.title("PostBuildTool(开发版)  Kanwairen")
 		self.window.geometry('550x250')                 #是x 不是*
 		self.window.resizable(width=False, height=False) #宽不可变, 高可变, 默认为True
 
@@ -34,7 +37,10 @@ class MainWindow(object):
 
 		# hex显示
 		Label(self.window, text="Current File:", font=("Times", 10), width=10, height=2).place(x=10, y=140)
-		self.hex_pathname_display = Label(self.window, text="如不操作hex可不选", bg="white", font=("楷体", 9), width=56, height=2)
+		if self.user_type == "Customer":
+			self.hex_pathname_display = Label(self.window, text="请选择源hex文件", bg="white", font=("楷体", 9), width=56, height=2)
+		elif self.user_type == "Developer":
+			self.hex_pathname_display = Label(self.window, text="如不操作hex可不选", bg="white", font=("楷体", 9), width=56, height=2)
 		self.hex_pathname_display.place(x=90, y=142)
 
 		self.hex_select_buntton = Button(self.window, text="选择源hex", bg="lightgreen", activebackground="gold", \
@@ -106,18 +112,26 @@ class RegWindow(object):
 
 class MyWindow(MainWindow, RegWindow):
 	"""UI"""
-	def __init__(self, msgRoute, signalRoute, readHex, reg, run):
+	def __init__(self, msgRoute, signalRoute, readHex, reg, run, user_type):
 		super().__init__()
 		self.msgRoute = msgRoute
 		self.signalRoute = signalRoute
 		self.readHex = readHex
 		self.reg = reg
 		self.ui_run = run
+		self.user_type = user_type
 
 	def run(self):
 		'''主界面运行按钮回调函数'''
-		self.ui_run(self.msgRoute, self.signalRoute, self.readHex)
-		messagebox.showinfo(title='提示', message='运行结束')
+		try:
+			# 当用户为客户时，必须选择源hex文件
+			if self.user_type == "Customer" and self.readHex.pathName == "":
+				messagebox.showinfo(title='提示', message='请选择源hex文件！')
+			else:
+				self.ui_run(self.msgRoute, self.signalRoute, self.readHex, self.user_type)
+				messagebox.showinfo(title='提示', message='运行结束')
+		except:
+			messagebox.showinfo(title='提示', message='运行出错，请检查需求表！！！')
 
 	def exit(self):
 		'''主界面退出按钮回调函数'''
@@ -132,7 +146,7 @@ class MyWindow(MainWindow, RegWindow):
 	def box(self):
 		'''主界面百宝箱按钮回调函数'''
 		if not hasattr(self, "tool_if"):
-			self.tool_if = tool_interface.BoxWindow(self)
+			self.tool_if = tool_interface.BoxWindow(self, self.user_type)
 			self.tool_if.boxwin_setup()
 			self.tool_if.box_window.protocol("WM_DELETE_WINDOW", self.tool_if.close_win_callback)
 		else:
@@ -171,7 +185,10 @@ class MyWindow(MainWindow, RegWindow):
 				self.hex_pathname_display["text"] = self.readHex.pathName
 				self.hex_pathname_display["anchor"] = W
 			else:
-				self.hex_pathname_display["text"] = "如不操作hex可不选"
+				if self.user_type == "Customer":
+					self.hex_pathname_display["text"] = "请选择源hex文件"
+				elif self.user_type == "Developer":
+					self.hex_pathname_display["text"] = "如不操作hex可不选"
 				self.hex_pathname_display["anchor"] = "center"
 		else:
 			ret = messagebox.askquestion(title='提示', message='您没有注册，需注册后才可使用！！！\n是否注册？')
