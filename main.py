@@ -15,7 +15,7 @@ def run(msgRoute, signalRoute, readHex, user_type):
 	signalRoute.read_data("T")
 	readHex.read_hex()
 
-	# 加密hex文件解密(此处耗时会很长)
+	# 加密hex文件解密(此处DES耗时会很长，AES比较快)
 	fileDecryption = fileencryption.FileDecryption()
 	fileDecryption.file_decryption(readHex.hexData)
 
@@ -202,6 +202,7 @@ def ui_main():
 	my_main_window.setup()
 	# 主界面显示
 	my_main_window.show()
+
 
 def cmd_main():
 	'''命令行版'''
