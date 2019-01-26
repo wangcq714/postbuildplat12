@@ -144,7 +144,7 @@ class SignalTableConvert(object):
 		self.des_table.append(self.ToNetwork_num(self.src_table["src_源网段"]))
 		self.des_table.append(self.bytebit2bit(self.src_table["src_起始byte"], self.src_table["src_起始bit"]))
 		self.des_table.append(self.src_table["src_信号长度"])
-		self.des_table.append(self.src_table["des_信号格式"])
+		self.des_table.append(self.src_table["src_信号格式"])
 		self.des_table.append(self.get_DTC())
 		self.des_table.append(self.src_table["src_初始值"])
 		self.des_table.append(self.src_table["src_默认值"])
