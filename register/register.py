@@ -1,4 +1,5 @@
 # import platform
+import os
 from platform import system
 # import ctypes
 from ctypes import cdll, create_string_buffer
@@ -126,6 +127,12 @@ class Register(object):
         # print('注册码：', b64encode(EncryptStr))
         return b64encode(EncryptStr) #转base64编码返回
 
+    def mkdir(self, path:str): 
+        # 去除首位空格、尾部\
+        path=path.strip()
+        # 判断结果
+        if not os.path.exists(path):
+            os.makedirs(path)
 
     #获取注册码，验证成功后生成注册文件
     def regist(self, reg_code):
@@ -147,6 +154,7 @@ class Register(object):
                 elif disk_info_encryption==key_b:
                     print("register succeed.") 
                     #读写文件要加判断
+                    self.mkdir("license")
                     if __name__ == '__main__':
                         with open('../license/license.lic','w') as f:
                             f.write(key)

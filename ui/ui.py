@@ -123,15 +123,15 @@ class MyWindow(MainWindow, RegWindow):
 
 	def run(self):
 		'''主界面运行按钮回调函数'''
-		try:
+		# try:
 			# 当用户为客户时，必须选择源hex文件
-			if self.user_type == "Customer" and self.readHex.pathName == "":
-				messagebox.showinfo(title='提示', message='请选择源hex文件！')
-			else:
-				self.ui_run(self.msgRoute, self.signalRoute, self.readHex, self.user_type)
-				messagebox.showinfo(title='提示', message='运行结束')
-		except:
-			messagebox.showinfo(title='提示', message='运行出错，请检查需求表！！！')
+		if self.user_type == "Customer" and self.readHex.pathName == "":
+			messagebox.showinfo(title='提示', message='请选择源hex文件！')
+		else:
+			self.ui_run(self.msgRoute, self.signalRoute, self.readHex, self.user_type)
+			messagebox.showinfo(title='提示', message='运行结束')
+		# except:
+			# messagebox.showinfo(title='提示', message='运行出错，请检查需求表！！！')
 
 	def exit(self):
 		'''主界面退出按钮回调函数'''

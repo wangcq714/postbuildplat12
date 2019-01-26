@@ -1,5 +1,6 @@
 # V1.1
 
+import os
 # import pandas
 from pandas import read_excel
 # from openpyxl import load_workbook
@@ -158,6 +159,13 @@ class SignalTableConvert(object):
 
 		return retDataList
 
+	def mkdir(self, path:str): 
+	    # 去除首位空格、尾部\
+	    path=path.strip()
+	    # 判断结果
+	    if not os.path.exists(path):
+	        os.makedirs(path) 
+
 	
 	# #主函数
 	# def main(self):
@@ -222,8 +230,10 @@ class SignalTableConvert(object):
 			# #创建目标表列表
 			self.build_des_table()
 
+			self.mkdir("output")
 			# 将目标表数据写入CSV文件中
-			with open(self.pathname[:self.pathname.rfind('/')+1] + "SignalRoute.csv", 'w', newline='') as csvfile:	
+			# with open(self.pathname[:self.pathname.rfind('/')+1] + "SignalRoute.csv", 'w', newline='') as csvfile:	
+			with open("output/SignalRoute.csv", 'w', newline='') as csvfile:	
 				writer = csv.writer(csvfile)
 				#写入文件头
 				writer.writerow(self.TableHeader)

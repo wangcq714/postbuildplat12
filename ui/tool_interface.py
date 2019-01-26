@@ -1,7 +1,7 @@
 from tkinter import Toplevel, Label, Button, StringVar, Entry, W
 from tkinter import messagebox
 from tool import public4all
-from tool import sig2pbsig, msg2pbmsg, diagreqmsgcfg
+from tool import sig2pbsig, msg2pbmsg, diagreqmsgcfg, dtccfg, msgnode, diagmsgcfg
 
 class BoxWindow(object):
 	'''工具窗口'''
@@ -123,11 +123,27 @@ class BoxWindow(object):
 
 	def dtc_cfg_table_callback(self):
 		'''生成代码DTC配置表'''
-		pass
+		if hasattr(self, "public_for_all"):
+			if self.public_for_all.pathname != "":
+				dtc_cfg = dtccfg.DtcConfig()
+				dtc_cfg.pathname = self.public_for_all.pathname
+				try:
+					dtc_cfg.main()
+					messagebox.showinfo(title='提示', message='转换完成')
+				except:
+					messagebox.showinfo(title='提示', message='转换出错，请检查表格信息')
 
 	def node_en_cfg_table_callback(self):
 		'''生成代码节点配置表'''
-		pass
+		if hasattr(self, "public_for_all"):
+			if self.public_for_all.pathname != "":
+				msg_node_en = msgnode.MsgNodeEnable()
+				msg_node_en.pathname = self.public_for_all.pathname
+				try:
+					msg_node_en.main()
+					messagebox.showinfo(title='提示', message='转换完成')
+				except:
+					messagebox.showinfo(title='提示', message='转换出错，请检查表格信息')
 
 	def diag_req_table_callback(self):
 		'''生成诊断请求表'''
@@ -135,15 +151,26 @@ class BoxWindow(object):
 			if self.public_for_all.pathname != "":
 				diag_req = diagreqmsgcfg.DiagReqTable()
 				diag_req.pathname = self.public_for_all.pathname
+				diag_msg = diagmsgcfg.DiagResTable()
+				diag_msg.pathname = self.public_for_all.pathname
 				try:
 					diag_req.main()
+					diag_msg.main_req()
 					messagebox.showinfo(title='提示', message='转换完成')
 				except:
 					messagebox.showinfo(title='提示', message='转换出错，请检查表格信息')
 
 	def diag_res_table_callback(self):
 		'''生成诊断响应表（硬件转发）'''
-		pass
+		if hasattr(self, "public_for_all"):
+			if self.public_for_all.pathname != "":
+				diag_msg = diagmsgcfg.DiagResTable()
+				diag_msg.pathname = self.public_for_all.pathname
+				try:
+					diag_msg.main_res()
+					messagebox.showinfo(title='提示', message='转换完成')
+				except:
+					messagebox.showinfo(title='提示', message='转换出错，请检查表格信息')
 
 	def help_callback(self):
 		'''帮助'''

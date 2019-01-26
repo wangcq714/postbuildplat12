@@ -1,3 +1,4 @@
+import os
 from openpyxl.utils import get_column_letter, column_index_from_string
 from tkinter.filedialog import askopenfilename
 from pandas import read_excel
@@ -19,6 +20,7 @@ class DiagRouteTable(object):
 		self.diagB_validDataList = []
 		self.diagB_reqDataList = []
 		self.reqMsgCfgList = []
+		self.diagch = []
 
 	# 获取文件路径名
 	def get_file_pathname(self):
@@ -42,10 +44,18 @@ class DiagRouteTable(object):
 			self.ChannalMapping[self.msgDataList[i][column_index_from_string('N') - 1]] = self.msgDataList[i][column_index_from_string('M') - 1]
 		print(self.ChannalMapping)
 
+	#获取诊断通道
+	def get_diag_ch(self):
+		for i in range(18,20):
+			self.diagch.append(self.msgDataList[i][column_index_from_string('N') - 1])
+		print(self.diagch)
+
 	# 获取有效数据
 	def get_valid_data(self):
 		for subList in self.msgDataList:
-			if subList[column_index_from_string('Q') - 1].strip(' ') == 'Y':
+			if subList[column_index_from_string('Q') - 1].strip(' ') == 'Y' and \
+			(subList[column_index_from_string('F') - 1].strip(' ') == self.diagch[0] or subList[column_index_from_string('F') - 1].strip(' ') == self.diagch[1]):
+				
 				self.validDataList.append(subList)
 		
 		# 获取诊断通道并以通道号升序排列	
@@ -178,8 +188,8 @@ class Id2IndexTable(object):
 
 	def build_table(self):
 		"""创建数组表"""
-		self.diagid2index_table_a.append("FAR const uint16 diagid2index_table_a[0x100] =\n")
-		self.diagid2index_table_b.append("FAR const uint16 diagid2index_table_b[0x100] =\n")
+		self.diagid2index_table_a.append("FAR const uint16 diagid2index_table_1[0x100] =\n")
+		self.diagid2index_table_b.append("FAR const uint16 diagid2index_table_2[0x100] =\n")
 		# self.diagid2index_table_a.append("table8_IdIndex0={\n")
 		# self.diagid2index_table_b.append("table8_IdIndex1={\n")
 
@@ -203,8 +213,16 @@ class WriteData(object):
 	def __init__(self):
 		self.first_open_Proj_DiagRouter_Cfg_c = False
 
+	def mkdir(self, path:str): 
+	    # 去除首位空格、尾部\
+	    path=path.strip()
+	    # 判断结果
+	    if not os.path.exists(path):
+	        os.makedirs(path) 
+
 	def write2Proj_DiagRouter_Cfg_c(self, dataList):
 		# 如果第一次写入，新建一个.c文件，否则接续写
+		self.mkdir("output")
 		if self.first_open_Proj_DiagRouter_Cfg_c == False:
 			self.first_open_Proj_DiagRouter_Cfg_c = True
 			with open("output/Proj_DiagRouter_Cfg.c",'w') as Cfile:
@@ -229,6 +247,7 @@ class DiagReqTable(object):
 		diagRouteTable.read_data()
 
 		diagRouteTable.get_channalmapping()
+		diagRouteTable.get_diag_ch()
 
 		diagRouteTable.get_valid_data()
 

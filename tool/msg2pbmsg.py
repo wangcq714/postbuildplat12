@@ -2,6 +2,7 @@
 
 
 # import sys
+import os
 
 # from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter, column_index_from_string
@@ -112,6 +113,14 @@ class MsgTableConvert(object):
 			# 			self.diag_des_column_data_all.append(self.build_des_column_data(diag_LineNumber, 0, num))
 			# 			diag_LineNumber += 1
 
+
+	def mkdir(self, path:str): 
+	    # 去除首位空格、尾部\
+	    path=path.strip()
+	    # 判断结果
+	    if not os.path.exists(path):
+	        os.makedirs(path) 
+
 	# 主函数
 	def main_pandas(self):
 		if self.pathname != "":
@@ -129,8 +138,10 @@ class MsgTableConvert(object):
 			#创建目标表列表
 			self.build_des_column_data_all()
 
+			self.mkdir("output")
 			#将目标列表写入目标文件中
-			with open(self.pathname[:self.pathname.rfind('/')+1] + "MessageRoute.csv", 'w', newline='') as csvfile:	
+			# with open(self.pathname[:self.pathname.rfind('/')+1] + "MessageRoute.csv", 'w', newline='') as csvfile:	
+			with open("output/MessageRoute.csv", 'w', newline='') as csvfile:	
 				writer = csv.writer(csvfile)
 				#写入表头
 				writer.writerow(self.TableHeader)
