@@ -112,11 +112,12 @@ class RegWindow(object):
 
 class MyWindow(MainWindow, RegWindow):
 	"""UI"""
-	def __init__(self, msgRoute, signalRoute, readHex, reg, run, user_type):
+	def __init__(self, msgRoute, signalRoute, readHex, checkError, reg, run, user_type):
 		super().__init__()
 		self.msgRoute = msgRoute
 		self.signalRoute = signalRoute
 		self.readHex = readHex
+		self.checkError = checkError
 		self.reg = reg
 		self.ui_run = run
 		self.user_type = user_type
@@ -127,9 +128,17 @@ class MyWindow(MainWindow, RegWindow):
 			# 当用户为客户时，必须选择源hex文件
 			if self.user_type == "Customer" and self.readHex.pathName == "":
 				messagebox.showinfo(title='提示', message='请选择源hex文件！')
-		else:
-			self.ui_run(self.msgRoute, self.signalRoute, self.readHex, self.user_type)
-			messagebox.showinfo(title='提示', message='运行结束')
+			else:
+				# 运行前数据检查
+				ret = self.checkError.msg_literal_check(self.msgRoute):
+				if ret:
+					pass
+				ret = self.checkError.msgHeaderList(self.signalRoute)
+				if ret:
+					pass
+
+				self.ui_run(self.msgRoute, self.signalRoute, self.readHex, self.user_type)
+				messagebox.showinfo(title='提示', message='运行结束')
 		except:
 			messagebox.showinfo(title='提示', message='运行出错，请检查需求表！！！')
 

@@ -1,14 +1,11 @@
 import re
+from openpyxl.utils import get_column_letter, column_index_from_string
 
 
 class CheckError(object):
 	'''错误检查'''
 	def __init__(self):
-		# 深拷贝一份路由数据，不破坏原有数据
-		self.msgDataList = deepcopy(msgRoute.dataList)
-		self.msgHeaderList = deepcopy(msgRoute.headerList)
-		self.signalDataList = deepcopy(signalRoute.dataList)
-		self.signalHeaderList = deepcopy(signalRoute.headerList)
+		pass
 
 	def id_is_hex(self, data:str):
 		'''判断你是否为16进制'''
@@ -21,105 +18,157 @@ class CheckError(object):
 
 	def msg_literal_check(self, msgRoute):
 		'''报文数据字面合法性检查'''
-		ret = "None" # 0：没有错误
+		# 深拷贝一份路由数据，不破坏原有数据
+		msgDataList = deepcopy(msgRoute.dataList)
+		msgHeaderList = deepcopy(msgRoute.headerList)
 
-		for i in range(len(self.msgDataList)):
-			if not self.id_is_hex(self.msgDataList[i][self.msgHeaderList.index("TxCANID")]):
-				ret = "TxCANID" # 1：发送报文ID格式错误，请填写标准的十六进制格式(0x000-0xFFF)
-				break
-			if not re.match("^[1-9]{1}[0-9]+$", self.msgDataList[i][self.signalHeaderList.index("TxPeriod")]):
-				ret = "TxPeriod" # 2：发送周期错误（填写十进制数字或NA)
-				break
-			if not re.match("^[1-8]{1}$", self.msgDataList[i][self.msgHeaderList.index("TxDLC")]):
-				ret = "TxDLC" # 3：发送报文长度错误，请填写1-8
-				break
-			if not re.match("^[0-6]{1}$", self.msgDataList[i][self.msgHeaderList.index("TxChannle")]):
-				ret = "TxChannle" # 4：发送报文通道错误，请填写0-6，0代表没有转发关系
-				break
+		row = None # 对应于excel表的行
+		col = None # 对应于excel表的列
+		hint = "" # ""：没有错误
 
-			if not self.id_is_hex(self.msgDataList[i][self.msgHeaderList.index("RxCANID")]):
-				ret = "RxCANID" # 5：接收报文ID格式错误，请填写标准的十六进制格式(0x000-0xFFF)
-				break
-			if not re.match("^[1-9]{1}[0-9]+$", self.msgDataList[i][self.signalHeaderList.index("RxPeriod")]):
-				ret = "RxPeriod" # 6：接收报文周期错误（填写十进制数字或NA)
-				break
-			if not re.match("^[1-8]{1}$", self.msgDataList[i][self.msgHeaderList.index("RxDLC")]):
-				ret = "RxDLC" # 7：接收报文长度错误，请填写1-8
-				break
-			if not re.match("^[0-6]{1}$", self.msgDataList[i][self.msgHeaderList.index("RxChannel")]):
-				ret = "RxChannel" # 8：接收报文通道错误，请填写0-6，0代表没有转发关系
-				break
+		ret = False
 
-			if not self.id_is_hex(self.msgDataList[i][self.msgHeaderList.index("RxMsk")]):
-				ret = "RxMsk" # 9：接收报文掩码错误，请填写标准的十六进制格式(0x000-0xFFF)
+		for i in range(len(msgDataList)):
+			row = i + 2
+			if not self.id_is_hex(msgDataList[i][msgHeaderList.index("TxCANID")]):
+				col = get_column_letter(msgHeaderList.index("TxCANID") + 1)
+				hint = "发送报文ID格式错误，请填写标准的十六进制格式(0x000-0xFFF)"
 				break
-			if not re.match("^[0-1]{1}$", self.msgDataList[i][self.msgHeaderList.index("RxInterrupt")]):
-				ret = "RxInterrupt" # 10：接收报文是否中断转发填写错误，请填写0或1，0代表不中断接收，1代表中断接收
+			if not re.match("^[1-9]{1}[0-9]+$", msgDataList[i][signalHeaderList.index("TxPeriod")]):
+				col = get_column_letter(msgHeaderList.index("TxPeriod") + 1)
+				hint = "发送周期错误（填写十进制数字或NA)"
 				break
-			if not re.match("^[YN]{1}$", self.msgDataList[i][self.msgHeaderList.index("RxDTC")]):
-				ret = "RxDTC" # 11：接收报文是否作为节点丢失DTC判断条件填写错误，请填写Y或N，Y代表是节点丢失报文，N代表不是节点丢失报文
+			if not re.match("^[1-8]{1}$", msgDataList[i][msgHeaderList.index("TxDLC")]):
+				col = get_column_letter(msgHeaderList.index("TxDLC") + 1)
+				hint = "发送报文长度错误，请填写1-8"
 				break
-			if not re.match("^[0-3]{1}$", self.msgDataList[i][self.msgHeaderList.index("RouteCondiction")]):
-				ret = "RouteCondiction" # 11：接收报文路由条件填写错误，请填写0-3，一般为3
+			if not re.match("^[0-6]{1}$", msgDataList[i][msgHeaderList.index("TxChannle")]):
+				col = get_column_letter(msgHeaderList.index("TxChannle") + 1)
+				hint = "发送报文通道错误，请填写0-6，0代表没有转发关系"
 				break
 
-		return ret, i
+			if not self.id_is_hex(msgDataList[i][msgHeaderList.index("RxCANID")]):
+				col = get_column_letter(msgHeaderList.index("RxCANID") + 1)
+				hint = "接收报文ID格式错误，请填写标准的十六进制格式(0x000-0xFFF)"
+				break
+			if not re.match("^[1-9]{1}[0-9]+$", msgDataList[i][signalHeaderList.index("RxPeriod")]):
+				col = get_column_letter(msgHeaderList.index("RxPeriod") + 1)
+				hint = "接收报文周期错误（填写十进制数字或NA)"
+				break
+			if not re.match("^[1-8]{1}$", msgDataList[i][msgHeaderList.index("RxDLC")]):
+				col = get_column_letter(msgHeaderList.index("RxDLC") + 1)
+				hint = "接收报文长度错误，请填写1-8"
+				break
+			if not re.match("^[0-6]{1}$", msgDataList[i][msgHeaderList.index("RxChannel")]):
+				col = get_column_letter(msgHeaderList.index("RxChannel") + 1)
+				hint = "接收报文通道错误，请填写0-6，0代表没有转发关系"
+				break
+
+			if not self.id_is_hex(msgDataList[i][msgHeaderList.index("RxMsk")]):
+				col = get_column_letter(msgHeaderList.index("RxMsk") + 1)
+				hint = "接收报文掩码错误，请填写标准的十六进制格式(0x000-0xFFF)"
+				break
+			if not re.match("^[0-1]{1}$", msgDataList[i][msgHeaderList.index("RxInterrupt")]):
+				col = get_column_letter(msgHeaderList.index("RxInterrupt") + 1)
+				hint = "接收报文是否中断转发填写错误，请填写0或1，0代表不中断接收，1代表中断接收"
+				break
+			if not re.match("^[YN]{1}$", msgDataList[i][msgHeaderList.index("RxDTC")]):
+				col = get_column_letter(msgHeaderList.index("RxDTC") + 1)
+				hint = "接收报文是否作为节点丢失DTC判断条件填写错误，请填写Y或N，Y代表是节点丢失报文，N代表不是节点丢失报文"
+				break
+			if not re.match("^[0-3]{1}$", msgDataList[i][msgHeaderList.index("RouteCondiction")]):
+				col = get_column_letter(msgHeaderList.index("RouteCondiction") + 1)
+				hint = "接收报文路由条件填写错误，请填写0-3，一般为3"
+				break
+
+		if hint：
+			ret = (row, col, hint)
+
+		return ret
 
 	def signal_literal_check(self, signalRoute):
 		'''信号数据字面合法性检查'''
-		ret = "None" # 0：没有错误
+		# 深拷贝一份路由数据，不破坏原有数据
+		signalDataList = deepcopy(signalRoute.dataList)
+		signalHeaderList = deepcopy(signalRoute.headerList)
 
-		for i in range(len(self.signalDataList)):
-			if not self.id_is_hex(self.signalDataList[i][self.signalHeaderList.index("TxCANID")]):
-				ret = "TxCANID" # 1：发送报文ID格式错误，请填写标准的十六进制格式(0x000-0xFFF)
-				break
-			if not re.match("^[1-9]{1}[0-9]+$", self.signalDataList[i][self.signalHeaderList.index("TxPeriod")]):
-				ret = "TxPeriod" # 2：发送周期错误（填写十进制数字且大于10)
-				break
-			if not re.match("^[1-8]{1}$", self.signalDataList[i][self.signalHeaderList.index("TxDLC")]):
-				ret = "TxDLC" # 3：发送报文长度错误，请填写1-8
-				break
-			if not re.match("^[0-6]{1}$", self.signalDataList[i][self.signalHeaderList.index("TxChannle")]):
-				ret = "TxChannle" # 4：发送报文通道错误，请填写0-6，0代表没有转发关系
-				break
-			if not (re.match("^[0-9]{1,2}$", self.signalDataList[i][self.signalHeaderList.index("TxStartBit")]) and (0 <= int(self.signalDataList[i][self.signalHeaderList.index("TxStartBit")]) <= 63)):
-				ret = "TxStartBit" # 5：发送信号起始位错误，请填写0-63
-				break
-			if not re.match("^[1-9]{1}[0-9]?$", self.signalDataList[i][self.signalHeaderList.index("TxSigLen")] and (1 <= int(self.signalDataList[i][self.signalHeaderList.index("TxSigLen")]) <= 64)):
-				ret = "TxSigLen" # 6：发送信号长度错误，请填写1-64
-				break
+		row = None
+		col = None 
+		hint = "" # ""：没有错误
 
-			if not self.id_is_hex(self.signalDataList[i][self.signalHeaderList.index("RxCANID")]):
-				ret = "RxCANID" # 7：接收报文ID格式错误，请填写标准的十六进制格式(0x000-0xFFF)
+		ret = False
+
+		for i in range(len(signalDataList)):
+			row = i + 2
+			if not self.id_is_hex(signalDataList[i][signalHeaderList.index("TxCANID")]):
+				col = get_column_letter(msgHeaderList.index("TxCANID") + 1)
+				hint = "发送信号ID格式错误，请填写标准的十六进制格式(0x000-0xFFF)"
 				break
-			if not re.match("^[1-9]{1}[0-9]+$", self.signalDataList[i][self.signalHeaderList.index("RxPeriod")]):
-				ret = "RxPeriod" # 8：接收信号周期错误（填写十进制数字且大于10)
+			if not re.match("^[1-9]{1}[0-9]+$", signalDataList[i][signalHeaderList.index("TxPeriod")]):
+				col = get_column_letter(msgHeaderList.index("TxPeriod") + 1)
+				hint = "发送信号周期错误（填写十进制数字且大于10)"
 				break
-			if not re.match("^[1-8]{1}$", self.signalDataList[i][self.signalHeaderList.index("RxDLC")]):
-				ret = "RxDLC" # 9：发送报文长度错误，请填写1-8
+			if not re.match("^[1-8]{1}$", signalDataList[i][signalHeaderList.index("TxDLC")]):
+				col = get_column_letter(msgHeaderList.index("TxDLC") + 1)
+				hint = "发送报文长度错误，请填写1-8"
 				break
-			if not re.match("^[0-6]{1}$", self.signalDataList[i][self.signalHeaderList.index("RxChannel")]):
-				ret = "RxChannel" # 10：发送报文通道错误，请填写0-6，0代表没有转发关系
+			if not re.match("^[0-6]{1}$", signalDataList[i][signalHeaderList.index("TxChannle")]):
+				col = get_column_letter(msgHeaderList.index("TxChannle") + 1)
+				hint = "发送信号通道错误，请填写0-6，0代表没有转发关系"
 				break
-			if not (re.match("^[0-9]{1,2}$", self.signalDataList[i][self.signalHeaderList.index("RxStartBit")]) and (0 <= int(self.signalDataList[i][self.signalHeaderList.index("RxStartBit")]) <= 63)):
-				ret = "RxStartBit" # 11：发送信号起始位错误，请填写0-63
+			if not (re.match("^[0-9]{1,2}$", signalDataList[i][signalHeaderList.index("TxStartBit")]) and (0 <= int(signalDataList[i][signalHeaderList.index("TxStartBit")]) <= 63)):
+				col = get_column_letter(msgHeaderList.index("TxStartBit") + 1)
+				hint = "发送信号起始位错误，请填写0-63"
 				break
-			if not (re.match("^[1-9]{1}[0-9]?$", self.signalDataList[i][self.signalHeaderList.index("RxSigLen")]) and (1 <= int(self.signalDataList[i][self.signalHeaderList.index("RxSigLen")]) <= 64)):
-				ret = "RxSigLen" # 12：发送信号长度错误，请填写1-64
+			if not re.match("^[1-9]{1}[0-9]?$", signalDataList[i][signalHeaderList.index("TxSigLen")] and (1 <= int(signalDataList[i][signalHeaderList.index("TxSigLen")]) <= 64)):
+				col = get_column_letter(msgHeaderList.index("TxSigLen") + 1)
+				hint = "发送信号长度错误，请填写1-64"
 				break
 
-			if not re.match("^[0-1]{1}$", self.signalDataList[i][self.signalHeaderList.index("ByteOrder")]):
-				ret = "ByteOrder" # 13：字节序错误，请填写0或1，0表示Motorola大端，1表示Intel小端
+			if not self.id_is_hex(signalDataList[i][signalHeaderList.index("RxCANID")]):
+				col = get_column_letter(msgHeaderList.index("RxCANID") + 1)
+				hint = "接收信号ID格式错误，请填写标准的十六进制格式(0x000-0xFFF)"
 				break
-			if not re.match("^[YN]{1}$", self.signalDataList[i][self.signalHeaderList.index("RxDTC")]):
-				ret = "RxDTC" # 14：接收报文是否作为节点丢失DTC判断条件填写错误，请填写Y或N，Y代表是节点丢失报文，N代表不是节点丢失报文
+			if not re.match("^[1-9]{1}[0-9]+$", signalDataList[i][signalHeaderList.index("RxPeriod")]):
+				col = get_column_letter(msgHeaderList.index("RxPeriod") + 1)
+				hint = "接收信号周期错误（填写十进制数字且大于10)"
 				break
-			if not re.match("0x[0-9 A-F]+", self.signalDataList[i][self.signalHeaderList.index("inival")], flags=re.IGNORECASE):
-				ret = "inival" # 15：接收信号初始值填写错误，请填写标准的十六进制格式
+			if not re.match("^[1-8]{1}$", signalDataList[i][signalHeaderList.index("RxDLC")]):
+				col = get_column_letter(msgHeaderList.index("RxDLC") + 1)
+				hint = "接收报文长度错误，请填写1-8"
 				break
-			if not re.match("0x[0-9 A-F]+", self.signalDataList[i][self.signalHeaderList.index("dfVal")], flags=re.IGNORECASE):
-				ret = "dfVal" # 16：接收信号失效值填写错误，请填写标准的十六进制格式
+			if not re.match("^[0-6]{1}$", signalDataList[i][signalHeaderList.index("RxChannel")]):
+				col = get_column_letter(msgHeaderList.index("RxChannel") + 1)
+				hint = "报文报文通道错误，请填写0-6，0代表没有转发关系"
 				break
+			if not (re.match("^[0-9]{1,2}$", signalDataList[i][signalHeaderList.index("RxStartBit")]) and (0 <= int(signalDataList[i][signalHeaderList.index("RxStartBit")]) <= 63)):
+				col = get_column_letter(msgHeaderList.index("RxStartBit") + 1)
+				hint = "接收信号起始位错误，请填写0-63"
+				break
+			if not (re.match("^[1-9]{1}[0-9]?$", signalDataList[i][signalHeaderList.index("RxSigLen")]) and (1 <= int(signalDataList[i][signalHeaderList.index("RxSigLen")]) <= 64)):
+				col = get_column_letter(msgHeaderList.index("RxSigLen") + 1)
+				hint = "接收信号长度错误，请填写1-64"
+				break
+
+			if not re.match("^[0-1]{1}$", signalDataList[i][signalHeaderList.index("ByteOrder")]):
+				col = get_column_letter(msgHeaderList.index("ByteOrder") + 1)
+				hint = "字节序错误，请填写0或1，0表示Motorola大端，1表示Intel小端"
+				break
+			if not re.match("^[YN]{1}$", signalDataList[i][signalHeaderList.index("RxDTC")]):
+				col = get_column_letter(msgHeaderList.index("RxDTC") + 1)
+				hint = "接收报文是否作为节点丢失DTC判断条件填写错误，请填写Y或N，Y代表是节点丢失报文，N代表不是节点丢失报文"
+				break
+			if not re.match("0x[0-9 A-F]+", signalDataList[i][signalHeaderList.index("inival")], flags=re.IGNORECASE):
+				col = get_column_letter(msgHeaderList.index("inival") + 1)
+				hint = "接收信号初始值填写错误，请填写标准的十六进制格式"
+				break
+			if not re.match("0x[0-9 A-F]+", signalDataList[i][signalHeaderList.index("dfVal")], flags=re.IGNORECASE):
+				col = get_column_letter(msgHeaderList.index("dfVal") + 1)
+				hint = "接收信号失效值填写错误，请填写标准的十六进制格式"
+				break
+
+		if hint：
+			ret = (row, col, hint)
 
 		return ret
 

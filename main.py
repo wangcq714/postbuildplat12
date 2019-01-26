@@ -1,6 +1,7 @@
 from module import readdata
 from module import buildtable
 from module import writedata
+from module import checkerror
 from ui import ui
 from register import register
 from header import id2indextableheader
@@ -194,10 +195,12 @@ def ui_main():
 	signalRoute = readdata.SignalRoute()
 	# 创建一个读hex对象
 	readHex = readdata.ReadHex()
+	# 创建数据检查模块
+	checkError = checkerror.CheckError()
 	# 创建一个校验是否注册类
 	reg = register.Register()
 	# 创建一个界面类
-	my_main_window = ui.MyWindow(msgRoute, signalRoute, readHex, reg, run, user_type)
+	my_main_window = ui.MyWindow(msgRoute, signalRoute, readHex, checkError, reg, run, user_type)
 	# 初始会主界面参数
 	my_main_window.setup()
 	# 主界面显示
