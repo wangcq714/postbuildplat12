@@ -10,15 +10,40 @@ from header import projpostbuildcfgheader
 from fileencryption import fileencryption
 
 
-def run(msgRoute, signalRoute, readHex, user_type):
+def run(msgRoute, signalRoute, readHex, checkError, user_type):
 	# 读取数据
 	msgRoute.read_data("O")
 	signalRoute.read_data("T")
 	readHex.read_hex()
 
+	# 数据合法性检查
+	# 字面上合法性校验
+	ret = checkError.msg_literal_check(msgRoute)
+	if ret:
+		return ret
+	ret = checkError.signal_literal_check(signalRoute)
+	if ret:
+		return ret
+	# 逻辑上合法性检校验
+	ret = checkError.msg_logic_check(msgRoute)
+	if ret:
+		return ret
+	ret = checkError.signal_logic_check(signalRoute)
+	if ret:
+		return ret
+	# 报文和信号一致性混合校验
+	ret = checkError.msgsignal_logic_check(msgRoute, signalRoute)
+	if ret:
+		return ret
+
 	# 加密hex文件解密(此处DES耗时会很长，AES比较快)
-	fileDecryption = fileencryption.FileDecryption()
-	fileDecryption.file_decryption(readHex.hexData)
+	try:
+		fileDecryption = fileencryption.FileDecryption()
+		fileDecryption.file_decryption(readHex.hexData)
+	except:
+		return "DecryptionError"
+
+	
 
 	# 中断MO初始化表
 	canFullIdNameISR = buildtable.CanFullIdNameISR()
@@ -183,6 +208,8 @@ def run(msgRoute, signalRoute, readHex, user_type):
 
 	print("------------------END-------------------")
 
+	return "Success"
+
 
 def ui_main():
 	'''UI版'''
@@ -224,7 +251,10 @@ def cmd_main():
 	readHex = readdata.ReadHex()
 	readHex.get_file_pathname()
 
-	run(msgRoute, signalRoute, readHex, user_type)
+	# 创建数据检查模块
+	checkError = checkerror.CheckError()
+
+	run(msgRoute, signalRoute, readHex, checkError, user_type)
 
 
 if __name__ == '__main__':

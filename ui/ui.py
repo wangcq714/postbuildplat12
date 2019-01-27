@@ -125,20 +125,17 @@ class MyWindow(MainWindow, RegWindow):
 	def run(self):
 		'''主界面运行按钮回调函数'''
 		try:
-			# 当用户为客户时，必须选择源hex文件
+			# 当用户为客户时，必须选择源hex文件（客户版）
 			if self.user_type == "Customer" and self.readHex.pathName == "":
 				messagebox.showinfo(title='提示', message='请选择源hex文件！')
 			else:
-				# 运行前数据检查
-				ret = self.checkError.msg_literal_check(self.msgRoute):
-				if ret:
-					pass
-				ret = self.checkError.msgHeaderList(self.signalRoute)
-				if ret:
-					pass
-
-				self.ui_run(self.msgRoute, self.signalRoute, self.readHex, self.user_type)
-				messagebox.showinfo(title='提示', message='运行结束')
+				ret = self.ui_run(self.msgRoute, self.signalRoute, self.readHex, self.checkError, self.user_type)
+				if ret == "Success":
+					messagebox.showinfo(title='提示', message='运行结束')
+				elif ret == "DecryptionError":
+					messagebox.showinfo(title='提示', message='Hex解密错误，请选择正确的加密Hex文件')
+				else:
+					messagebox.showinfo(title='提示', message='{} 第 {} 行，第 {} 列出错：{}'.format(ret[0], ret[1], ret[2], ret[3]))
 		except:
 			messagebox.showinfo(title='提示', message='运行出错，请检查需求表！！！')
 

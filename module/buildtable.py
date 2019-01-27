@@ -119,11 +119,11 @@ class CanFullIdNameISR(HexBase):
 		self.signalValidDataListISR = []
 		self.signalDesChListISR = []
 		self.CanFullIDNameISRList = []
-		self.CAN_FULL_ID_NAME_ISR = []
-		self.lenType = "uint8"
+		self.CAN_FULL_ID_NAME_ISR = []		
 		self.structType = ["uint32", "uint8", "uint8", "uint16", "uint32", "uint8", "uint8", "uint8", "uint8", "uint16"]
 		self.structLen = 18
 		self.tableLenAddr = "0x00c0a59f"
+		self.lenType = "uint8"
 		self.lenHexDataList = []
 		self.tableAddr = "0x00c0b5f6"
 		self.tableLen = 60
@@ -478,11 +478,11 @@ class PbDirectRoutingTable(RoutingTable, HexBase):
 									  "RxInterrupt", "RxDTC", "RxChannel"]
 		self.routerTableISRList = []
 		self.routerTableFIFOList = []
-		self.PB_DirectRoutingTable = []
-		self.lenType = "uint8"
+		self.PB_DirectRoutingTable = []		
 		self.structType = ["uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint16", "uint16", "uint16", "uint8", "uint8"]
 		self.structLen = 22
 		self.tableLenAddr = "0x00c08001"
+		self.lenType = "uint8"
 		self.lenHexDataList = []
 		self.tableAddr = "0x00c094be"
 		self.tableLen = 20
@@ -525,11 +525,11 @@ class PbMsgRoutingTable(RoutingTable, HexBase):
 									  "RxInterrupt", "RxDTC", "RxChannel"]
 		self.routerTableISRList = []
 		self.routerTableFIFOList = []
-		self.PB_MsgRoutingTable = []
-		self.lenType = "uint8"
+		self.PB_MsgRoutingTable = []		
 		self.structType = ["uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint16", "uint16", "uint16", "uint8", "uint8"]
 		self.structLen = 22
 		self.tableLenAddr = "0x00c0a46d"
+		self.lenType = "uint8"
 		self.lenHexDataList = []
 		self.tableAddr = "0x00c14200"
 		self.tableLen = 256
@@ -563,10 +563,11 @@ class PbMsgRecvTable(HexBase):
 		self.signalValidDataList = []
 		self.PBMsgRecvTableList = []
 		self.PB_Msg_Recv_Table = []
-		self.lenType = "uint8"
+		
 		self.structType = ["uint32", "uint16", "uint16", "uint8", "uint8", "uint8", "uint8"]
 		self.structLen = 12
 		self.tableLenAddr = "0x00c0a51f"
+		self.lenType = "uint8"
 		self.lenHexDataList = []
 		self.tableAddr = "0x00c07cf0"
 		self.tableLen = 64
@@ -648,11 +649,11 @@ class PbSignalRoutingTable(HexBase):
 		self.validDataListList = []
 		self.srcSignalListList = []
 		self.PbSignalRoutingTableList = []
-		self.PB_Signal_Routing_Table = []
-		self.lenType = "uint8"
+		self.PB_Signal_Routing_Table = []		
 		self.structType = ["uint16", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8"]
 		self.structLen = 8
 		self.tableLenAddr = ""
+		self.lenType = "uint8"
 		self.lenHexDataList = []
 		self.tableAddr = "0x00c12200"
 		self.tableLen = 1024
@@ -776,11 +777,11 @@ class PbMsgSendTable(HexBase):
 		# self.rxCanIdList = []
 		self.txCanIdrxCanIdCountList = []
 		self.PbMsgSendTableList = []
-		self.PB_Msg_Send_Table = []
-		self.lenType = "uint8"
+		self.PB_Msg_Send_Table = []		
 		self.structType = ["uint32", "uint16", "uint8", "uint8", "uint8", "uint8", "uint16", "uint8", "uint8"] 
 		self.structLen = 14
 		self.tableLenAddr = ""
+		self.lenType = "uint8"
 		self.lenHexDataList = []
 		self.tableAddr = "0x00c08002"
 		self.tableLen = 128
@@ -1007,12 +1008,12 @@ class PbMsgSendSchedule(HexBase):
 		# self.srcSignalListList = [] # 同一ID发送信号对应的源信号表索引
 		# self.recvSignalList = []
 		self.PbMsgSendSchedule = []
-		self.PB_Msg_Send_Schedule = []
-		self.lenType = "uint8"
+		self.PB_Msg_Send_Schedule = []		
 		self.structType = ["uint16", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8",\
 									"uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8"] #第一个为uint8，字节补全处理为uint16
 		self.structLen = 22
 		self.tableLenAddr = ""
+		self.lenType = "uint8"
 		self.lenHexDataList = []
 		self.tableAddr = "0x00c09b0e"
 		self.tableLen = 10
@@ -1138,11 +1139,11 @@ class PbMsgRevInitVal(PbMsgRevInitDefaultValBase, HexBase):
 		self.srcSignalInfoList = []
 		self.validDataList = []
 		self.PbMsgRevInitValList = []
-		self.PB_MsgRevInitVal = []
-		self.lenType = "uint8"
+		self.PB_MsgRevInitVal = []		
 		self.structType = ["uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8"] 
 		self.structLen = 8
 		self.tableLenAddr = ""
+		self.lenType = "uint8"
 		self.lenHexDataList = []
 		self.tableAddr = "0x00c0bafa"
 		self.tableLen = 128
@@ -1198,11 +1199,11 @@ class PbMsgRevDefaultVal(PbMsgRevInitDefaultValBase, HexBase):
 		self.srcSignalInfoList = []
 		self.validDataList = []
 		self.PbMsgRevDefaultVal = []
-		self.PB_MsgRevDefaultVal = []
-		self.lenType = "uint8"
+		self.PB_MsgRevDefaultVal = []		
 		self.structType = ["uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8"] 
 		self.structLen = 8
 		self.tableLenAddr = ""
+		self.lenType = "uint8"
 		self.lenHexDataList = []
 		self.tableAddr = "0x00c16c00"
 		self.tableLen = 128
@@ -1285,9 +1286,9 @@ class Id2IndexTable(RoutingTable, HexBase):
 
 		self.id2index_table = []
 
-		# self.lenType = "uint8"
-		# self.tableLenAddr = ""
-		# self.lenHexDataList = []
+		self.lenType = "uint8"
+		self.tableLenAddr = ""
+		self.lenHexDataList = []
 		self.structType = ["uint16" for i in range(2048)]
 		self.structLen = 4096		
 		self.tableAddrA = "0x00c0a5f6"
