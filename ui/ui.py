@@ -112,8 +112,9 @@ class RegWindow(object):
 
 class MyWindow(MainWindow, RegWindow):
 	"""UI"""
-	def __init__(self, msgRoute, signalRoute, readHex, checkError, reg, run, user_type):
+	def __init__(self, config, msgRoute, signalRoute, readHex, checkError, reg, run, user_type):
 		super().__init__()
+		self.config = config
 		self.msgRoute = msgRoute
 		self.signalRoute = signalRoute
 		self.readHex = readHex
@@ -124,20 +125,20 @@ class MyWindow(MainWindow, RegWindow):
 
 	def run(self):
 		'''主界面运行按钮回调函数'''
-		try:
-			# 当用户为客户时，必须选择源hex文件（客户版）
-			if self.user_type == "Customer" and self.readHex.pathName == "":
-				messagebox.showinfo(title='提示', message='请选择源hex文件！')
+		# try:
+		# 当用户为客户时，必须选择源hex文件（客户版）
+		if self.user_type == "Customer" and self.readHex.pathName == "":
+			messagebox.showinfo(title='提示', message='请选择源hex文件！')
+		else:
+			ret = self.ui_run(self.config, self.msgRoute, self.signalRoute, self.readHex, self.checkError, self.user_type)
+			if ret == "Success":
+				messagebox.showinfo(title='提示', message='运行结束')
+			elif ret == "DecryptionError":
+				messagebox.showinfo(title='提示', message='Hex解密错误，请选择正确的加密Hex文件')
 			else:
-				ret = self.ui_run(self.msgRoute, self.signalRoute, self.readHex, self.checkError, self.user_type)
-				if ret == "Success":
-					messagebox.showinfo(title='提示', message='运行结束')
-				elif ret == "DecryptionError":
-					messagebox.showinfo(title='提示', message='Hex解密错误，请选择正确的加密Hex文件')
-				else:
-					messagebox.showinfo(title='提示', message='{} 第 {} 行，第 {} 列出错：{}'.format(ret[0], ret[1], ret[2], ret[3]))
-		except:
-			messagebox.showinfo(title='提示', message='运行出错，请检查需求表！！！')
+				messagebox.showinfo(title='提示', message='{} 第 {} 行，第 {} 列出错：{}'.format(ret[0], ret[1], ret[2], ret[3]))
+		# except:
+		# 	messagebox.showinfo(title='提示', message='运行出错，请检查需求表！！！')
 
 	def exit(self):
 		'''主界面退出按钮回调函数'''

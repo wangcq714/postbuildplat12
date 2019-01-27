@@ -84,19 +84,42 @@ class ReadHex(object):
 			print(self.hexData[0:10])
 
 
+class Config(object):
+	def __init__(self):
+		self.configInfo = {}
+
+	def read_data(self):
+		'''读取配置信息'''
+		with open("config.ini", 'r') as file:
+			for line in file:
+				if line.find(':') != -1:
+					tmpDict = {}
+					tmpList = line[line.find(':')+1:-1].split(',')
+					tmpDict["tableLenAddr"] = tmpList[0]
+					tmpDict["lenType"] = tmpList[1]
+					tmpDict["tableAddr"] = tmpList[2]
+					tmpDict["tableLen"] = tmpList[3]
+					self.configInfo[line[:line.find(':')]] = tmpDict
+
+		print(self.configInfo)
+
+
 if __name__ == '__main__':
-	msgRoute = MsgRoute()
-	msgRoute.get_file_pathname()
-	msgRoute.read_data("O")
-	print(msgRoute.dataList)
-	print(len(msgRoute.dataList))
+	# msgRoute = MsgRoute()
+	# msgRoute.get_file_pathname()
+	# msgRoute.read_data("O")
+	# print(msgRoute.dataList)
+	# print(len(msgRoute.dataList))
 
 
-	signalRoute = SignalRoute()
-	signalRoute.get_file_pathname()
-	signalRoute.read_data("T")
-	print(signalRoute.dataList)
-	print(len(signalRoute.dataList))
+	# signalRoute = SignalRoute()
+	# signalRoute.get_file_pathname()
+	# signalRoute.read_data("T")
+	# print(signalRoute.dataList)
+	# print(len(signalRoute.dataList))
+
+	config = Config()
+	config.read_data()
 
 
 
