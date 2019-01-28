@@ -10,7 +10,7 @@ from header import projpostbuildcfgheader
 from fileencryption import fileencryption
 
 
-def run(config, msgRoute, signalRoute, readHex, checkError, user_type):
+def run(config, msgRoute, signalRoute, readHex, user_type):
 	# 读取数据
 	config.read_data()
 	msgRoute.read_data("O")
@@ -18,6 +18,8 @@ def run(config, msgRoute, signalRoute, readHex, checkError, user_type):
 	readHex.read_hex()
 
 	# 数据合法性检查
+	# 创建数据检查模块
+	checkError = checkerror.CheckError()
 	# 字面上合法性校验
 	ret = checkError.msg_literal_check(msgRoute)
 	if ret:
@@ -225,12 +227,10 @@ def ui_main():
 	signalRoute = readdata.SignalRoute()
 	# 创建一个读hex对象
 	readHex = readdata.ReadHex()
-	# 创建数据检查模块
-	checkError = checkerror.CheckError()
 	# 创建一个校验是否注册类
 	reg = register.Register()
 	# 创建一个界面类
-	my_main_window = ui.MyWindow(config, msgRoute, signalRoute, readHex, checkError, reg, run, user_type)
+	my_main_window = ui.MyWindow(config, msgRoute, signalRoute, readHex, reg, run, user_type)
 	# 初始会主界面参数
 	my_main_window.setup()
 	# 主界面显示
@@ -257,10 +257,7 @@ def cmd_main():
 	readHex = readdata.ReadHex()
 	readHex.get_file_pathname()
 
-	# 创建数据检查模块
-	checkError = checkerror.CheckError()
-
-	run(config, msgRoute, signalRoute, readHex, checkError, user_type)
+	run(config, msgRoute, signalRoute, readHex, user_type)
 
 
 if __name__ == '__main__':

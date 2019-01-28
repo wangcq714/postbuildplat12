@@ -112,13 +112,12 @@ class RegWindow(object):
 
 class MyWindow(MainWindow, RegWindow):
 	"""UI"""
-	def __init__(self, config, msgRoute, signalRoute, readHex, checkError, reg, run, user_type):
+	def __init__(self, config, msgRoute, signalRoute, readHex, reg, run, user_type):
 		super().__init__()
 		self.config = config
 		self.msgRoute = msgRoute
 		self.signalRoute = signalRoute
 		self.readHex = readHex
-		self.checkError = checkError
 		self.reg = reg
 		self.ui_run = run
 		self.user_type = user_type
@@ -130,7 +129,7 @@ class MyWindow(MainWindow, RegWindow):
 		if self.user_type == "Customer" and self.readHex.pathName == "":
 			messagebox.showinfo(title='提示', message='请选择源hex文件！')
 		else:
-			ret = self.ui_run(self.config, self.msgRoute, self.signalRoute, self.readHex, self.checkError, self.user_type)
+			ret = self.ui_run(self.config, self.msgRoute, self.signalRoute, self.readHex, self.user_type)
 			if ret == "Success":
 				messagebox.showinfo(title='提示', message='运行结束')
 			elif ret == "DecryptionError":
