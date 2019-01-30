@@ -12,11 +12,12 @@ from fileencryption import fileencryption
 
 def run(config, msgRoute, signalRoute, readHex, user_type):
 	# 读取数据
-	config.read_data()
+	# config.read_data()
 	msgRoute.read_data("O")
 	signalRoute.read_data("T")
 	readHex.read_hex()
 
+	print(config.platInfo)
 	# 数据合法性检查
 	# 创建数据检查模块
 	checkError = checkerror.CheckError()
@@ -49,7 +50,7 @@ def run(config, msgRoute, signalRoute, readHex, user_type):
 	
 
 	# 中断MO初始化表
-	canFullIdNameISR = buildtable.CanFullIdNameISR(config.configInfo)
+	canFullIdNameISR = buildtable.CanFullIdNameISR(config)
 	canFullIdNameISR.get_valid_data(msgRoute, signalRoute)
 	canFullIdNameISR.data_handle()
 	canFullIdNameISR.build_table()
@@ -59,7 +60,7 @@ def run(config, msgRoute, signalRoute, readHex, user_type):
 	canFullIdNameISR.modify_hex_data(readHex.hexData, canFullIdNameISR.tableAddr, canFullIdNameISR.structLen*canFullIdNameISR.tableLen, canFullIdNameISR.hexDataList)
 
 	# 中断轮询表
-	pbDirectRoutingTable = buildtable.PbDirectRoutingTable(config.configInfo)
+	pbDirectRoutingTable = buildtable.PbDirectRoutingTable(config)
 	pbDirectRoutingTable.get_valid_data(msgRoute, signalRoute)
 	pbDirectRoutingTable.data_handle()
 	pbDirectRoutingTable.build_table()
@@ -69,7 +70,7 @@ def run(config, msgRoute, signalRoute, readHex, user_type):
 	pbDirectRoutingTable.modify_hex_data(readHex.hexData, pbDirectRoutingTable.tableAddr, pbDirectRoutingTable.structLen*pbDirectRoutingTable.tableLen, pbDirectRoutingTable.hexDataList)
 
 	# 报文轮询表
-	pbMsgRoutingTable = buildtable.PbMsgRoutingTable(config.configInfo)
+	pbMsgRoutingTable = buildtable.PbMsgRoutingTable(config)
 	pbMsgRoutingTable.get_valid_data(msgRoute, signalRoute)
 	pbMsgRoutingTable.data_handle()
 	pbMsgRoutingTable.build_table()
@@ -79,7 +80,7 @@ def run(config, msgRoute, signalRoute, readHex, user_type):
 	pbMsgRoutingTable.modify_hex_data(readHex.hexData, pbMsgRoutingTable.tableAddr, pbMsgRoutingTable.structLen*pbMsgRoutingTable.tableLen, pbMsgRoutingTable.hexDataList)
 
 	# 信号报文接收表
-	pbMsgRecvTable = buildtable.PbMsgRecvTable(config.configInfo)
+	pbMsgRecvTable = buildtable.PbMsgRecvTable(config)
 	pbMsgRecvTable.get_valid_data(signalRoute)
 	pbMsgRecvTable.data_handle()
 	pbMsgRecvTable.build_table()
@@ -89,7 +90,7 @@ def run(config, msgRoute, signalRoute, readHex, user_type):
 	pbMsgRecvTable.modify_hex_data(readHex.hexData, pbMsgRecvTable.tableAddr, pbMsgRecvTable.structLen*pbMsgRecvTable.tableLen, pbMsgRecvTable.hexDataList)
 
 	# 信号路由表
-	pbSignalRoutingTable = buildtable.PbSignalRoutingTable(config.configInfo)
+	pbSignalRoutingTable = buildtable.PbSignalRoutingTable(config)
 	pbSignalRoutingTable.get_valid_data(signalRoute)
 	pbSignalRoutingTable.data_handle()
 	pbSignalRoutingTable.build_table()
@@ -97,7 +98,7 @@ def run(config, msgRoute, signalRoute, readHex, user_type):
 	pbSignalRoutingTable.modify_hex_data(readHex.hexData, pbSignalRoutingTable.tableAddr, pbSignalRoutingTable.structLen*pbSignalRoutingTable.tableLen, pbSignalRoutingTable.hexDataList)
 
 	# 信号报文发送表
-	pbMsgSendTable = buildtable.PbMsgSendTable(config.configInfo)
+	pbMsgSendTable = buildtable.PbMsgSendTable(config)
 	pbMsgSendTable.get_valid_data(signalRoute)
 	pbMsgSendTable.data_handle()
 	pbMsgSendTable.build_table()
@@ -111,7 +112,7 @@ def run(config, msgRoute, signalRoute, readHex, user_type):
 	pbMsgSrcTable.build_table()
 
 	# 信号报文发送调度表
-	pbMsgSendSchedule = buildtable.PbMsgSendSchedule(config.configInfo)
+	pbMsgSendSchedule = buildtable.PbMsgSendSchedule(config)
 	pbMsgSendSchedule.get_valid_data(signalRoute)
 	pbMsgSendSchedule.data_handle()
 	pbMsgSendSchedule.build_table()
@@ -119,7 +120,7 @@ def run(config, msgRoute, signalRoute, readHex, user_type):
 	pbMsgSendSchedule.modify_hex_data(readHex.hexData, pbMsgSendSchedule.tableAddr, pbMsgSendSchedule.structLen*pbMsgSendSchedule.tableLen, pbMsgSendSchedule.hexDataList)
 
 	# 信号初始值
-	pbMsgRevInitVal = buildtable.PbMsgRevInitVal(config.configInfo)
+	pbMsgRevInitVal = buildtable.PbMsgRevInitVal(config)
 	pbMsgRevInitVal.get_valid_data(signalRoute)
 	pbMsgRevInitVal.data_handle()
 	pbMsgRevInitVal.build_table()
@@ -127,7 +128,7 @@ def run(config, msgRoute, signalRoute, readHex, user_type):
 	pbMsgRevInitVal.modify_hex_data(readHex.hexData, pbMsgRevInitVal.tableAddr, pbMsgRevInitVal.structLen*pbMsgRevInitVal.tableLen, pbMsgRevInitVal.hexDataList)
 
 	# 信号失效值
-	pbMsgRevDefaultVal = buildtable.PbMsgRevDefaultVal(config.configInfo)
+	pbMsgRevDefaultVal = buildtable.PbMsgRevDefaultVal(config)
 	pbMsgRevDefaultVal.get_valid_data(signalRoute)
 	pbMsgRevDefaultVal.data_handle()
 	pbMsgRevDefaultVal.build_table()
@@ -135,7 +136,7 @@ def run(config, msgRoute, signalRoute, readHex, user_type):
 	pbMsgRevDefaultVal.modify_hex_data(readHex.hexData, pbMsgRevDefaultVal.tableAddr, pbMsgRevDefaultVal.structLen*pbMsgRevDefaultVal.tableLen, pbMsgRevDefaultVal.hexDataList)
 
 	# 报文索引
-	id2IndexTable = buildtable.Id2IndexTable(config.configInfo)
+	id2IndexTable = buildtable.Id2IndexTable(config)
 	id2IndexTable.get_valid_data(msgRoute, signalRoute)
 	id2IndexTable.data_handle()
 	id2IndexTable.build_table()
@@ -217,10 +218,11 @@ def run(config, msgRoute, signalRoute, readHex, user_type):
 def ui_main():
 	'''UI版'''
 	# 配置用户模式
-	user_type = "Developer"
-	# user_type = "Customer"
+	# user_type = "Developer"
+	user_type = "Customer"
 	# 创建配置信息对象
 	config = readdata.Config()
+	config.read_data()
 	# 创建普通报文对象
 	msgRoute = readdata.MsgRoute()
 	# 创建信号报文对象
@@ -242,8 +244,10 @@ def cmd_main():
 	# 配置用户模式
 	# user_type = "Developer"
 	user_type = "Customer"
+
 	# 创建配置信息对象
 	config = readdata.Config()
+	config.read_data()
 
 	# 创建普通报文对象
 	msgRoute = readdata.MsgRoute()
@@ -257,7 +261,7 @@ def cmd_main():
 	readHex = readdata.ReadHex()
 	readHex.get_file_pathname()
 
-	run(config, msgRoute, signalRoute, readHex, user_type)
+	run(config, msgRoute, signalRoute, readHex, config.user_type)
 
 
 if __name__ == '__main__':

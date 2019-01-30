@@ -86,22 +86,41 @@ class ReadHex(object):
 
 class Config(object):
 	def __init__(self):
-		self.configInfo = {}
+		self.addrInfo = {}
+		self.platInfo = ""
+		self.user_type = ""
 
 	def read_data(self):
 		'''读取配置信息'''
+		dataList = []
+		# 读取全部数据存入列表中
 		with open("config.ini", 'r') as file:
 			for line in file:
-				if line.find(':') != -1:
-					tmpDict = {}
-					tmpList = line[line.find(':')+1:-1].split(',')
-					tmpDict["tableLenAddr"] = tmpList[0]
-					tmpDict["lenType"] = tmpList[1]
-					tmpDict["tableAddr"] = tmpList[2]
-					tmpDict["tableLen"] = tmpList[3]
-					self.configInfo[line[:line.find(':')]] = tmpDict
+				dataList.append(line[:-1])
+		# 获取hex地址
+		for data in dataList[dataList.index("[Address]") + 1:dataList.index("[Platform]")]:
+			if data.find(':') != -1:
+				tmpDict = {}
+				tmpList = data[data.find(':')+1:].split(',')
+				tmpDict["tableLenAddr"] = tmpList[0]
+				tmpDict["lenType"] = tmpList[1]
+				tmpDict["tableAddr"] = tmpList[2]
+				tmpDict["tableLen"] = tmpList[3]
+				self.addrInfo[data[:data.find(':')]] = tmpDict
+		# 获取平台信息
+		for data in dataList[dataList.index("[Platform]") + 1:dataList.index("[User]")]:
+			if data.find(':') != -1:
+				tmpList = data[data.find(':')+1:].split(',')
+				self.platInfo = tmpList[0]
+		# 获取用户信息
+		for data in dataList[dataList.index("[User]") + 1:dataList.index("[End]")]:
+			if data.find(':') != -1:
+				tmpList = data[data.find(':')+1:].split(',')
+				self.user_type = tmpList[0]
 
-		print(self.configInfo)
+		print(self.addrInfo)
+		print(self.platInfo)
+		print(self.user_type)
 
 
 if __name__ == '__main__':

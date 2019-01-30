@@ -112,7 +112,7 @@ class HexBase(object):
 # 中断MO初始化表
 class CanFullIdNameISR(HexBase):
 	"""CAN_FULL_ID_NAME_ISR"""
-	def __init__(self, configInfo):
+	def __init__(self, config):
 		"""初始化"""
 		self.msgValidDataListISR = []
 		self.msgDesChListISR = []
@@ -124,13 +124,13 @@ class CanFullIdNameISR(HexBase):
 		self.structLen = 18
 		# self.tableLenAddr = "0x00c0a59f"
 		# self.lenType = "uint8"
-		self.tableLenAddr = configInfo["CAN_FULL_ID_NAME_ISR"]["tableLenAddr"]
-		self.lenType = configInfo["CAN_FULL_ID_NAME_ISR"]["lenType"]
+		self.tableLenAddr = config.addrInfo["CAN_FULL_ID_NAME_ISR"]["tableLenAddr"]
+		self.lenType = config.addrInfo["CAN_FULL_ID_NAME_ISR"]["lenType"]
 		self.lenHexDataList = []
 		# self.tableAddr = "0x00c0b5f6"
 		# self.tableLen = 60
-		self.tableAddr = configInfo["CAN_FULL_ID_NAME_ISR"]["tableAddr"]
-		self.tableLen = int(configInfo["CAN_FULL_ID_NAME_ISR"]["tableLen"])
+		self.tableAddr = config.addrInfo["CAN_FULL_ID_NAME_ISR"]["tableAddr"]
+		self.tableLen = int(config.addrInfo["CAN_FULL_ID_NAME_ISR"]["tableLen"])
 		self.hexDataList = []
 
 	def get_valid_data(self, msgRoute, signalRoute):
@@ -468,7 +468,7 @@ class RoutingTable(object):
 # 中断轮询表
 class PbDirectRoutingTable(RoutingTable, HexBase):
 	"""PB_DirectRoutingTable"""
-	def __init__(self, configInfo):
+	def __init__(self, config):
 		"""初始化"""
 		self.msgValidDataList = []
 		self.msgValidDataListISR = []
@@ -487,13 +487,13 @@ class PbDirectRoutingTable(RoutingTable, HexBase):
 		self.structLen = 22
 		# self.tableLenAddr = "0x00c08001"
 		# self.lenType = "uint8"
-		self.tableLenAddr = configInfo["PB_DirectRoutingTable"]["tableLenAddr"]
-		self.lenType = configInfo["PB_DirectRoutingTable"]["lenType"]
+		self.tableLenAddr = config.addrInfo["PB_DirectRoutingTable"]["tableLenAddr"]
+		self.lenType = config.addrInfo["PB_DirectRoutingTable"]["lenType"]
 		self.lenHexDataList = []
 		# self.tableAddr = "0x00c094be"
 		# self.tableLen = 20
-		self.tableAddr = configInfo["PB_DirectRoutingTable"]["tableAddr"]
-		self.tableLen = int(configInfo["PB_DirectRoutingTable"]["tableLen"])
+		self.tableAddr = config.addrInfo["PB_DirectRoutingTable"]["tableAddr"]
+		self.tableLen = int(config.addrInfo["PB_DirectRoutingTable"]["tableLen"])
 		self.hexDataList = []
 
 	# 创建PB_DirectRoutingTable数组
@@ -519,7 +519,7 @@ class PbDirectRoutingTable(RoutingTable, HexBase):
 # 报文轮询表
 class PbMsgRoutingTable(RoutingTable, HexBase):
 	"""PB_MsgRoutingTable"""
-	def __init__(self, configInfo):
+	def __init__(self, config):
 		"""初始化"""
 		self.msgValidDataList = []
 		self.msgValidDataListISR = []
@@ -538,13 +538,13 @@ class PbMsgRoutingTable(RoutingTable, HexBase):
 		self.structLen = 22
 		# self.tableLenAddr = "0x00c0a46d"
 		# self.lenType = "uint8"
-		self.tableLenAddr = configInfo["PB_MsgRoutingTable"]["tableLenAddr"]
-		self.lenType = configInfo["PB_MsgRoutingTable"]["lenType"]
+		self.tableLenAddr = config.addrInfo["PB_MsgRoutingTable"]["tableLenAddr"]
+		self.lenType = config.addrInfo["PB_MsgRoutingTable"]["lenType"]
 		self.lenHexDataList = []
 		# self.tableAddr = "0x00c14200"
 		# self.tableLen = 256
-		self.tableAddr = configInfo["PB_MsgRoutingTable"]["tableAddr"]
-		self.tableLen = int(configInfo["PB_MsgRoutingTable"]["tableLen"])
+		self.tableAddr = config.addrInfo["PB_MsgRoutingTable"]["tableAddr"]
+		self.tableLen = int(config.addrInfo["PB_MsgRoutingTable"]["tableLen"])
 		self.hexDataList = []
 
 		
@@ -575,7 +575,7 @@ class PbMsgRoutingTable(RoutingTable, HexBase):
 # 信号报文接收表
 class PbMsgRecvTable(HexBase):
 	"""PB_Msg_Recv_Table"""
-	def __init__(self, configInfo):
+	def __init__(self, config):
 		"""初始化"""
 		self.signalValidDataList = []
 		self.PBMsgRecvTableList = []
@@ -585,13 +585,13 @@ class PbMsgRecvTable(HexBase):
 		self.structLen = 12
 		# self.tableLenAddr = "0x00c0a51f"
 		# self.lenType = "uint8"
-		self.tableLenAddr = configInfo["PB_Msg_Recv_Table"]["tableLenAddr"]
-		self.lenType = configInfo["PB_Msg_Recv_Table"]["lenType"]
+		self.tableLenAddr = config.addrInfo["PB_Msg_Recv_Table"]["tableLenAddr"]
+		self.lenType = config.addrInfo["PB_Msg_Recv_Table"]["lenType"]
 		self.lenHexDataList = []
 		# self.tableAddr = "0x00c07cf0"
 		# self.tableLen = 64
-		self.tableAddr = configInfo["PB_Msg_Recv_Table"]["tableAddr"]
-		self.tableLen = int(configInfo["PB_Msg_Recv_Table"]["tableLen"])
+		self.tableAddr = config.addrInfo["PB_Msg_Recv_Table"]["tableAddr"]
+		self.tableLen = int(config.addrInfo["PB_Msg_Recv_Table"]["tableLen"])
 		self.hexDataList = []
 
 		
@@ -667,7 +667,7 @@ class PbMsgRecvTable(HexBase):
 # 信号路由表
 class PbSignalRoutingTable(HexBase):
 	"""PB_Signal_Routing_Table"""
-	def __init__(self, configInfo):
+	def __init__(self, config):
 		"""初始化"""
 		self.txCanIdList = []
 		self.rxCanIdList = []
@@ -679,13 +679,13 @@ class PbSignalRoutingTable(HexBase):
 		self.structLen = 8
 		# self.tableLenAddr = ""
 		# self.lenType = "uint8"
-		self.tableLenAddr = configInfo["PB_Signal_Routing_Table"]["tableLenAddr"]
-		self.lenType = configInfo["PB_Signal_Routing_Table"]["lenType"]
+		self.tableLenAddr = config.addrInfo["PB_Signal_Routing_Table"]["tableLenAddr"]
+		self.lenType = config.addrInfo["PB_Signal_Routing_Table"]["lenType"]
 		self.lenHexDataList = []
 		# self.tableAddr = "0x00c12200"
 		# self.tableLen = 1024
-		self.tableAddr = configInfo["PB_Signal_Routing_Table"]["tableAddr"]
-		self.tableLen = int(configInfo["PB_Signal_Routing_Table"]["tableLen"])
+		self.tableAddr = config.addrInfo["PB_Signal_Routing_Table"]["tableAddr"]
+		self.tableLen = int(config.addrInfo["PB_Signal_Routing_Table"]["tableLen"])
 		self.hexDataList = []
 
 	def get_valid_data(self, signalRoute):
@@ -798,7 +798,7 @@ class PbSignalRoutingTable(HexBase):
 # 信号报文发送表
 class PbMsgSendTable(HexBase):
 	"""PB_Msg_Send_Table"""
-	def __init__(self, configInfo):
+	def __init__(self, config):
 		"""初始化"""
 		self.txCanIdList = []
 		self.validDataList = []
@@ -811,13 +811,13 @@ class PbMsgSendTable(HexBase):
 		self.structLen = 14
 		# self.tableLenAddr = ""
 		# self.lenType = "uint8"
-		self.tableLenAddr = configInfo["PB_Msg_Send_Table"]["tableLenAddr"]
-		self.lenType = configInfo["PB_Msg_Send_Table"]["lenType"]
+		self.tableLenAddr = config.addrInfo["PB_Msg_Send_Table"]["tableLenAddr"]
+		self.lenType = config.addrInfo["PB_Msg_Send_Table"]["lenType"]
 		self.lenHexDataList = []
 		# self.tableAddr = "0x00c08002"
 		# self.tableLen = 128
-		self.tableAddr = configInfo["PB_Msg_Send_Table"]["tableAddr"]
-		self.tableLen = int(configInfo["PB_Msg_Send_Table"]["tableLen"])
+		self.tableAddr = config.addrInfo["PB_Msg_Send_Table"]["tableAddr"]
+		self.tableLen = int(config.addrInfo["PB_Msg_Send_Table"]["tableLen"])
 		self.hexDataList = []
 
 		
@@ -1039,7 +1039,7 @@ class PbMsgSrcTable(object):
 # 信号报文发送调度表
 class PbMsgSendSchedule(HexBase):
 	"""PB_Msg_Send_Schedule"""
-	def __init__(self, configInfo):
+	def __init__(self, config):
 		"""初始化"""
 		self.txCanIdPeriodList = []
 		# self.srcSignalListList = [] # 同一ID发送信号对应的源信号表索引
@@ -1051,13 +1051,13 @@ class PbMsgSendSchedule(HexBase):
 		self.structLen = 22
 		# self.tableLenAddr = ""
 		# self.lenType = "uint8"
-		self.tableLenAddr = configInfo["PB_Msg_Send_Schedule"]["tableLenAddr"]
-		self.lenType = configInfo["PB_Msg_Send_Schedule"]["lenType"]
+		self.tableLenAddr = config.addrInfo["PB_Msg_Send_Schedule"]["tableLenAddr"]
+		self.lenType = config.addrInfo["PB_Msg_Send_Schedule"]["lenType"]
 		self.lenHexDataList = []
 		# self.tableAddr = "0x00c09b0e"
 		# self.tableLen = 10
-		self.tableAddr = configInfo["PB_Msg_Send_Schedule"]["tableAddr"]
-		self.tableLen = int(configInfo["PB_Msg_Send_Schedule"]["tableLen"])
+		self.tableAddr = config.addrInfo["PB_Msg_Send_Schedule"]["tableAddr"]
+		self.tableLen = int(config.addrInfo["PB_Msg_Send_Schedule"]["tableLen"])
 		self.hexDataList = []
 
 		
@@ -1179,7 +1179,7 @@ class PbMsgRevInitDefaultValBase(object):
 # 信号初始值
 class PbMsgRevInitVal(PbMsgRevInitDefaultValBase, HexBase):
 	"""PB_MsgRevInitVal"""
-	def __init__(self, configInfo):
+	def __init__(self, config):
 		"""初始化"""
 		self.srcSignalInfoList = []
 		self.validDataList = []
@@ -1189,13 +1189,13 @@ class PbMsgRevInitVal(PbMsgRevInitDefaultValBase, HexBase):
 		self.structLen = 8
 		# self.tableLenAddr = ""
 		# self.lenType = "uint8"
-		self.tableLenAddr = configInfo["PB_MsgRevInitVal"]["tableLenAddr"]
-		self.lenType = configInfo["PB_MsgRevInitVal"]["lenType"]
+		self.tableLenAddr = config.addrInfo["PB_MsgRevInitVal"]["tableLenAddr"]
+		self.lenType = config.addrInfo["PB_MsgRevInitVal"]["lenType"]
 		self.lenHexDataList = []
 		# self.tableAddr = "0x00c0bafa"
 		# self.tableLen = 128
-		self.tableAddr = configInfo["PB_MsgRevInitVal"]["tableAddr"]
-		self.tableLen = int(configInfo["PB_MsgRevInitVal"]["tableLen"])
+		self.tableAddr = config.addrInfo["PB_MsgRevInitVal"]["tableAddr"]
+		self.tableLen = int(config.addrInfo["PB_MsgRevInitVal"]["tableLen"])
 		self.hexDataList = []
 
 	def data_handle(self):
@@ -1242,7 +1242,7 @@ class PbMsgRevInitVal(PbMsgRevInitDefaultValBase, HexBase):
 # 信号失效值
 class PbMsgRevDefaultVal(PbMsgRevInitDefaultValBase, HexBase):
 	"""PB_MsgRevDefaultVal"""
-	def __init__(self, configInfo):
+	def __init__(self, config):
 		"""初始化"""
 		self.srcSignalInfoList = []
 		self.validDataList = []
@@ -1252,13 +1252,13 @@ class PbMsgRevDefaultVal(PbMsgRevInitDefaultValBase, HexBase):
 		self.structLen = 8
 		# self.tableLenAddr = ""
 		# self.lenType = "uint8"
-		self.tableLenAddr = configInfo["PB_MsgRevDefaultVal"]["tableLenAddr"]
-		self.lenType = configInfo["PB_MsgRevDefaultVal"]["lenType"]
+		self.tableLenAddr = config.addrInfo["PB_MsgRevDefaultVal"]["tableLenAddr"]
+		self.lenType = config.addrInfo["PB_MsgRevDefaultVal"]["lenType"]
 		self.lenHexDataList = []
 		# self.tableAddr = "0x00c16c00"
 		# self.tableLen = 128
-		self.tableAddr = configInfo["PB_MsgRevDefaultVal"]["tableAddr"]
-		self.tableLen = int(configInfo["PB_MsgRevDefaultVal"]["tableLen"])
+		self.tableAddr = config.addrInfo["PB_MsgRevDefaultVal"]["tableAddr"]
+		self.tableLen = int(config.addrInfo["PB_MsgRevDefaultVal"]["tableLen"])
 		self.hexDataList = []
 
 		
@@ -1309,7 +1309,7 @@ class PbMsgRevDefaultVal(PbMsgRevInitDefaultValBase, HexBase):
 # 报文索引
 class Id2IndexTable(RoutingTable, HexBase):
 	"""id2index_table"""
-	def __init__(self, configInfo):
+	def __init__(self, config):
 		"""初始化"""
 		self.msgValidDataList = []
 		self.msgValidDataListISR = []
@@ -1346,8 +1346,8 @@ class Id2IndexTable(RoutingTable, HexBase):
 		self.structLen = 4096
 		# self.tableLenAddr = ""
 		# self.lenType = "uint8"
-		self.tableLenAddr = configInfo["Id2IndexTableA"]["tableLenAddr"]
-		self.lenType = configInfo["Id2IndexTableA"]["lenType"]
+		self.tableLenAddr = config.addrInfo["Id2IndexTableA"]["tableLenAddr"]
+		self.lenType = config.addrInfo["Id2IndexTableA"]["lenType"]
 		self.lenHexDataList = []	
 		# self.tableAddrA = "0x00c0a5f6"
 		# self.tableAddrB = "0x00c06804"
@@ -1355,14 +1355,14 @@ class Id2IndexTable(RoutingTable, HexBase):
 		# self.tableAddrD = "0x00c0d2ea"
 		# self.tableAddrE = "0x00c10200"
 		# self.tableAddrF = "0x00c11200"
-		self.tableAddrA = configInfo["Id2IndexTableA"]["tableAddr"]
-		self.tableAddrB = configInfo["Id2IndexTableB"]["tableAddr"]
-		self.tableAddrC = configInfo["Id2IndexTableC"]["tableAddr"]
-		self.tableAddrD = configInfo["Id2IndexTableD"]["tableAddr"]
-		self.tableAddrE = configInfo["Id2IndexTableE"]["tableAddr"]
-		self.tableAddrF = configInfo["Id2IndexTableF"]["tableAddr"]
+		self.tableAddrA = config.addrInfo["Id2IndexTableA"]["tableAddr"]
+		self.tableAddrB = config.addrInfo["Id2IndexTableB"]["tableAddr"]
+		self.tableAddrC = config.addrInfo["Id2IndexTableC"]["tableAddr"]
+		self.tableAddrD = config.addrInfo["Id2IndexTableD"]["tableAddr"]
+		self.tableAddrE = config.addrInfo["Id2IndexTableE"]["tableAddr"]
+		self.tableAddrF = config.addrInfo["Id2IndexTableF"]["tableAddr"]
 		# self.tableLen = 1
-		self.tableLen = int(configInfo["Id2IndexTableA"]["tableLen"])
+		self.tableLen = int(config.addrInfo["Id2IndexTableA"]["tableLen"])
 		self.hexDataList = []
 
 	def data_handle(self):

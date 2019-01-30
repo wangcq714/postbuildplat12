@@ -12,7 +12,7 @@ class BoxWindow(object):
 		self.user_type = user_type
 
 	def boxwin_setup(self):
-		self.box_window.title("百宝箱")
+		self.box_window.title("百宝袋")
 		if self.user_type == "Customer":
 			self.box_window.geometry('550x200')                 #是x 不是*
 		elif self.user_type == "Developer":
