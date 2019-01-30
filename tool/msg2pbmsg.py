@@ -164,7 +164,6 @@ class MsgTableConvert(object):
 			print("请选择路由表")
 
 
-
 if __name__ == '__main__':
 	msg_table_convert = MsgTableConvert()
 	msg_table_convert.get_file_pathname()

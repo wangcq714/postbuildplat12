@@ -10,55 +10,56 @@ class MainWindow(object):
 
 	def setup(self):
 		"""主界面参数配置"""
-		if self.user_type == "Customer":
+		if self.config.user_type == "Customer":
 			self.window.title("PostBuildTool(客户版)  Kanwairen")
-		elif self.user_type == "Developer":
+		elif self.config.user_type == "Developer":
 			self.window.title("PostBuildTool(开发版)  Kanwairen")
 		self.window.geometry('580x340')                 #是x 不是*
+		self.window.iconbitmap("image/icon.ico")
 		self.window.resizable(width=False, height=False) #宽不可变, 高可变, 默认为True
 
-		if self.user_type == "Developer":
+		if self.config.user_type == "Developer":
 			# 创建一个适用平台下拉列表
 			self.apply_platform_val = StringVar()#窗体自带的文本，新建一个值
-			self.apply_platform = ttk.Combobox(self.window, textvariable=self.apply_platform_val, state='readonly')
+			self.apply_platform = ttk.Combobox(self.window, textvariable=self.apply_platform_val, width=54, state='readonly')
 			self.apply_platform["values"]=("选择平台","GAW1.2_NewPlatform","GAW1.2_OldPlatform","Qoros_C6M0")  
 			self.apply_platform.current(0)  #选择第一个  
 			self.apply_platform.bind("<<ComboboxSelected>>", self.select_apply_platform)  #绑定事件,(下拉列表框被选中时，绑定go()函数)  
-			self.apply_platform.place(x=30, y=10)
+			self.apply_platform.place(x=91, y=15)
 			# print(self.apply_platform.get())
 
 		# 报文显示
 		Label(self.window, text="报文表", font=("楷体", 10), width=8, height=2).place(x=20, y=50)
-		self.msgtable_pathname_display = Label(self.window, text="如无报文可不选", bg="white", font=("楷体", 9), width=65, height=2)
+		self.msgtable_pathname_display = Label(self.window, text="如无报文可不选", bg="white", font=("楷体", 9), width=66, height=2)
 		self.msgtable_pathname_display.place(x=90, y=52)
 		self.openfileimg = PhotoImage(file='image/open.png')
 		self.msgtable_select_buntton = Button(self.window,image=self.openfileimg, command=self.select_msgtable)
 		# self.msgtable_select_buntton = Button(self.window, text="选择", bg="lightgreen", activebackground="gold", \
 		# 										fg="black", activeforeground="black", font=("楷体", 9), width=8, height=2, command=self.select_msgtable)
-		self.msgtable_select_buntton.place(x=500, y=47)
+		self.msgtable_select_buntton.place(x=510, y=51)
 
 		# 信号显示
 		Label(self.window, text="信号表", font=("楷体", 10), width=8, height=2).place(x=20, y=120)
-		self.signaltable_pathname_display = Label(self.window, text="如无信号可不选", bg="white", font=("楷体", 9), width=65, height=2)
+		self.signaltable_pathname_display = Label(self.window, text="如无信号可不选", bg="white", font=("楷体", 9), width=66, height=2)
 		self.signaltable_pathname_display.place(x=90, y=122)
 
 		self.signaltable_select_buntton = Button(self.window,image=self.openfileimg, command=self.select_signaltable)
 		# self.signaltable_select_buntton = Button(self.window, text="选择", bg="lightgreen", activebackground="gold", \
 		# 										fg="black", activeforeground="black", font=("楷体", 9), width=8, height=2, command=self.select_signaltable)
-		self.signaltable_select_buntton.place(x=500, y=117)
+		self.signaltable_select_buntton.place(x=510, y=121)
 
 		# hex显示
 		Label(self.window, text="源hex", font=("楷体", 10), width=8, height=2).place(x=20, y=190)
-		if self.user_type == "Customer":
-			self.hex_pathname_display = Label(self.window, text="请选择源hex文件", bg="white", font=("楷体", 9), width=65, height=2)
-		elif self.user_type == "Developer":
-			self.hex_pathname_display = Label(self.window, text="如不操作hex可不选", bg="white", font=("楷体", 9), width=65, height=2)
+		if self.config.user_type == "Customer":
+			self.hex_pathname_display = Label(self.window, text="请选择源hex文件", bg="white", font=("楷体", 9), width=66, height=2)
+		elif self.config.user_type == "Developer":
+			self.hex_pathname_display = Label(self.window, text="如不操作hex可不选", bg="white", font=("楷体", 9), width=66, height=2)
 		self.hex_pathname_display.place(x=90, y=192)
 
 		self.hex_select_buntton = Button(self.window,image=self.openfileimg, command=self.select_hex)
 		# self.hex_select_buntton = Button(self.window, text="选择", bg="lightgreen", activebackground="gold", \
 		# 										fg="black", activeforeground="black", font=("楷体", 9), width=8, height=2, command=self.select_hex)
-		self.hex_select_buntton.place(x=500, y=187)
+		self.hex_select_buntton.place(x=510, y=191)
 
 		# 运行
 		self.runimg = PhotoImage(file='image/run.png')
@@ -157,7 +158,7 @@ class RegWindow(object):
 
 class MyWindow(MainWindow, RegWindow):
 	"""UI"""
-	def __init__(self, config, msgRoute, signalRoute, readHex, reg, run, user_type):
+	def __init__(self, config, msgRoute, signalRoute, readHex, reg, run):
 		super().__init__()
 		self.paltform = "选择平台"
 		self.config = config
@@ -167,7 +168,7 @@ class MyWindow(MainWindow, RegWindow):
 		self.reg = reg
 		self.ui_run = run
 		# self.user_type = user_type
-		self.user_type = config.user_type
+		# self.user_type = config.user_type
 
 	def select_apply_platform(self, *args):
 		'''选择适用对象'''
@@ -176,27 +177,27 @@ class MyWindow(MainWindow, RegWindow):
 
 	def run(self):
 		'''主界面运行按钮回调函数'''
-		# try:
-		# 当用户为客户时，必须选择源hex文件（客户版）
-		if self.user_type == "Customer" and self.readHex.pathName == "":
-			messagebox.showinfo(title='提示', message='请选择源hex文件！')
-		else:
-			if self.user_type == "Developer":
-				if self.paltform != "选择平台":
-					self.config.platInfo = self.paltform
-				else:
-					messagebox.showinfo(title='提示', message='请选择应用平台')
-					return
-
-			ret = self.ui_run(self.config, self.msgRoute, self.signalRoute, self.readHex, self.user_type)
-			if ret == "Success":
-				messagebox.showinfo(title='提示', message='运行结束')
-			elif ret == "DecryptionError":
-				messagebox.showinfo(title='提示', message='Hex解密错误，请选择正确的加密Hex文件')
+		try:
+			# 当用户为客户时，必须选择源hex文件（客户版）
+			if self.config.user_type == "Customer" and self.readHex.pathName == "":
+				messagebox.showinfo(title='提示', message='请选择源hex文件！')
 			else:
-				messagebox.showinfo(title='提示', message='{} 第 {} 行，第 {} 列出错：{}'.format(ret[0], ret[1], ret[2], ret[3]))
-		# except:
-		# 	messagebox.showinfo(title='提示', message='运行出错，请检查需求表！！！')
+				if self.config.user_type == "Developer":
+					if self.paltform != "选择平台":
+						self.config.platInfo = self.paltform
+					else:
+						messagebox.showinfo(title='提示', message='请选择应用平台')
+						return
+
+				ret = self.ui_run(self.config, self.msgRoute, self.signalRoute, self.readHex)
+				if ret == "Success":
+					messagebox.showinfo(title='提示', message='运行结束')
+				elif ret == "DecryptionError":
+					messagebox.showinfo(title='提示', message='Hex解密错误，请选择正确的加密Hex文件')
+				else:
+					messagebox.showinfo(title='提示', message='{} 第 {} 行，第 {} 列出错：{}'.format(ret[0], ret[1], ret[2], ret[3]))
+		except:
+			messagebox.showinfo(title='提示', message='运行出错，请检查需求表！！！')
 
 	def enter_run_area(self, *args):
 		'''鼠标悬浮'''
@@ -238,7 +239,7 @@ class MyWindow(MainWindow, RegWindow):
 	def box(self):
 		'''主界面百宝箱按钮回调函数'''
 		if not hasattr(self, "tool_if"):
-			self.tool_if = tool_interface.BoxWindow(self, self.user_type)
+			self.tool_if = tool_interface.BoxWindow(self, self.config.user_type)
 			self.tool_if.boxwin_setup()
 			self.tool_if.box_window.protocol("WM_DELETE_WINDOW", self.tool_if.close_win_callback)
 		else:

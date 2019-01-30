@@ -10,7 +10,7 @@ from header import projpostbuildcfgheader
 from fileencryption import fileencryption
 
 
-def run(config, msgRoute, signalRoute, readHex, user_type):
+def run(config, msgRoute, signalRoute, readHex):
 	# 读取数据
 	# config.read_data()
 	msgRoute.read_data("O")
@@ -18,6 +18,7 @@ def run(config, msgRoute, signalRoute, readHex, user_type):
 	readHex.read_hex()
 
 	print(config.platInfo)
+
 	# 数据合法性检查
 	# 创建数据检查模块
 	checkError = checkerror.CheckError()
@@ -158,7 +159,7 @@ def run(config, msgRoute, signalRoute, readHex, user_type):
 	writeData = writedata.WriteData()	
 
 	# 只有当用户模式为开发者模式时才会生成配置表文件；客户模式下只可操作加密hex.
-	if user_type == "Developer":
+	if config.user_type == "Developer":
 		# 写入Table.c文件
 		writeData.write_table_c(canFullIdNameISR.CAN_FULL_ID_NAME_ISR)
 		writeData.write_table_c(pbDirectRoutingTable.PB_DirectRoutingTable)
@@ -217,9 +218,6 @@ def run(config, msgRoute, signalRoute, readHex, user_type):
 
 def ui_main():
 	'''UI版'''
-	# 配置用户模式
-	# user_type = "Developer"
-	user_type = "Customer"
 	# 创建配置信息对象
 	config = readdata.Config()
 	config.read_data()
@@ -232,7 +230,7 @@ def ui_main():
 	# 创建一个校验是否注册类
 	reg = register.Register()
 	# 创建一个界面类
-	my_main_window = ui.MyWindow(config, msgRoute, signalRoute, readHex, reg, run, user_type)
+	my_main_window = ui.MyWindow(config, msgRoute, signalRoute, readHex, reg, run)
 	# 初始会主界面参数
 	my_main_window.setup()
 	# 主界面显示
@@ -241,10 +239,6 @@ def ui_main():
 
 def cmd_main():
 	'''命令行版'''
-	# 配置用户模式
-	# user_type = "Developer"
-	user_type = "Customer"
-
 	# 创建配置信息对象
 	config = readdata.Config()
 	config.read_data()
@@ -261,7 +255,7 @@ def cmd_main():
 	readHex = readdata.ReadHex()
 	readHex.get_file_pathname()
 
-	run(config, msgRoute, signalRoute, readHex, config.user_type)
+	run(config, msgRoute, signalRoute, readHex)
 
 
 if __name__ == '__main__':
