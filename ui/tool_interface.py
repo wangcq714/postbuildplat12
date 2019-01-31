@@ -5,17 +5,17 @@ from tool import sig2pbsig, msg2pbmsg, diagreqmsgcfg, dtccfg, msgnode, diagmsgcf
 
 class BoxWindow(object):
 	'''工具窗口'''
-	def __init__(self, main_window, user_type):
+	def __init__(self, main_window, config):
 		'''初始化'''
 		self.box_window = Toplevel()
 		self.main_window = main_window
-		self.user_type = user_type
+		self.config = config
 
 	def boxwin_setup(self):
 		self.box_window.title("百宝袋")
-		if self.user_type == "Customer":
+		if self.config.user_type == "Customer":
 			self.box_window.geometry('550x210')                 #是x 不是*
-		elif self.user_type == "Developer":
+		elif self.config.user_type == "Developer":
 			self.box_window.geometry('550x350')
 		self.box_window.iconbitmap("image/icon1.ico")
 		self.box_window.resizable(width=False, height=False) #宽不可变, 高可变, 默认为True
@@ -42,7 +42,7 @@ class BoxWindow(object):
 												fg="black", activeforeground="black", font=("楷体", 9), width=20, height=2, command=self.postbuild_sig_table_callback)
 		self.hex_select_buntton.place(x=300, y=80)
 
-		if self.user_type == "Developer":
+		if self.config.user_type == "Developer":
 			# DTC配置表
 			self.signaltable_select_buntton = Button(self.box_window, text="DTC配置表", bg="lightgreen", activebackground="gold", \
 													fg="black", activeforeground="black", font=("楷体", 9), width=20, height=2, command=self.dtc_cfg_table_callback)
@@ -68,9 +68,9 @@ class BoxWindow(object):
 		self.help_button = Button(self.box_window,image=self.helpimg, command=self.help_callback)
 		# self.help_button = Button(self.box_window, text="帮助", bg="lightgreen", activebackground="gold", \
 		# 					fg="black", activeforeground="black", font=("楷体", 9), width=12, height=2, command=self.help_callback)
-		if self.user_type == "Customer":
+		if self.config.user_type == "Customer":
 			self.help_button.place(x=130, y=140)
-		elif self.user_type == "Developer":
+		elif self.config.user_type == "Developer":
 			self.help_button.place(x=130, y=280)
 		# 绑定鼠标移入事件
 		self.help_button.bind("<Enter>", self.enter_help_area)
@@ -82,9 +82,9 @@ class BoxWindow(object):
 		self.back_button = Button(self.box_window,image=self.backimg, command=self.back_callback)
 		# self.back_button = Button(self.box_window, text="返回", bg="lightgreen", activebackground="gold", \
 		# 					fg="black", activeforeground="black", font=("楷体", 9), width=12, height=2, command=self.back_callback)
-		if self.user_type == "Customer":
+		if self.config.user_type == "Customer":
 			self.back_button.place(x=340, y=140)
-		elif self.user_type == "Developer":
+		elif self.config.user_type == "Developer":
 			self.back_button.place(x=340, y=280)
 		# 绑定鼠标移入事件
 		self.back_button.bind("<Enter>", self.enter_back_area)
@@ -124,7 +124,7 @@ class BoxWindow(object):
 					msg.main_pandas()
 					messagebox.showinfo(title='提示', message='转换完成')
 				except:
-					messagebox.showinfo(title='提示', message='转换出错，请检查表格信息')
+					messagebox.showinfo(title='提示', message='转换出错，请检查表格信息或查看报文表是否关闭')
 		else:
 			messagebox.showinfo(title='提示', message='请选择路由表')
 
@@ -132,13 +132,13 @@ class BoxWindow(object):
 		'''生成postbuil工具所用信号表'''
 		if hasattr(self, "public_for_all"):
 			if self.public_for_all.pathname != "":
-				sig = sig2pbsig.SignalTableConvert()
+				sig = sig2pbsig.SignalTableConvert(self.config)
 				sig.pathname = self.public_for_all.pathname
 				try:
 					sig.main_pandas()
 					messagebox.showinfo(title='提示', message='转换完成')
 				except:
-					messagebox.showinfo(title='提示', message='转换出错，请检查表格信息')
+					messagebox.showinfo(title='提示', message='转换出错，请检查表格信息或查看报文表是否关闭')
 		else:
 			messagebox.showinfo(title='提示', message='请选择路由表')
 
@@ -211,9 +211,9 @@ class BoxWindow(object):
 	def enter_help_area(self, *args):
 		'''鼠标悬浮'''
 		self.pre_click_hint_val.set("帮助")
-		if self.user_type == "Customer":
+		if self.config.user_type == "Customer":
 			self.pre_click_hint.place(x=130, y=120)
-		elif self.user_type == "Developer":
+		elif self.config.user_type == "Developer":
 			self.pre_click_hint.place(x=130, y=260)
 
 	def leave_help_area(self, *args):
@@ -229,9 +229,9 @@ class BoxWindow(object):
 	def enter_back_area(self, *args):
 		'''鼠标悬浮'''
 		self.pre_click_hint_val.set("返回")
-		if self.user_type == "Customer":
+		if self.config.user_type == "Customer":
 			self.pre_click_hint.place(x=340, y=120)
-		elif self.user_type == "Developer":
+		elif self.config.user_type == "Developer":
 			self.pre_click_hint.place(x=340, y=260)
 
 	def leave_back_area(self, *args):

@@ -88,6 +88,7 @@ class Config(object):
 	def __init__(self):
 		self.addrInfo = {}
 		self.platInfo = ""
+		self.platforms = []
 		self.user_type = ""
 
 	def read_data(self):
@@ -111,6 +112,7 @@ class Config(object):
 		for data in dataList[dataList.index("[Platform]") + 1:dataList.index("[User]")]:
 			if data.find(':') != -1:
 				tmpList = data[data.find(':')+1:].split(',')
+				self.platforms = tmpList
 				self.platInfo = tmpList[0]  # 配置平台信息，主要应用于客户版；0：GAW1.2_NewPlatform 1：GAW1.2_OldPlatform 2：Qoros_C6M0
 		# 获取用户信息
 		for data in dataList[dataList.index("[User]") + 1:dataList.index("[End]")]:
@@ -118,9 +120,10 @@ class Config(object):
 				tmpList = data[data.find(':')+1:].split(',')
 				self.user_type = tmpList[0]  # 配置用户信息； 0：Developer 1:Customer
 
-		print(self.addrInfo)
-		print(self.platInfo)
-		print(self.user_type)
+		# print(self.addrInfo)
+		# print(self.platInfo)
+		# print(self.platforms)
+		# print(self.user_type)
 
 
 if __name__ == '__main__':

@@ -114,6 +114,7 @@ class CanFullIdNameISR(HexBase):
 	"""CAN_FULL_ID_NAME_ISR"""
 	def __init__(self, config):
 		"""初始化"""
+		self.config = config
 		self.msgValidDataListISR = []
 		self.msgDesChListISR = []
 		self.signalValidDataListISR = []
@@ -124,13 +125,13 @@ class CanFullIdNameISR(HexBase):
 		self.structLen = 18
 		# self.tableLenAddr = "0x00c0a59f"
 		# self.lenType = "uint8"
-		self.tableLenAddr = config.addrInfo["CAN_FULL_ID_NAME_ISR"]["tableLenAddr"]
-		self.lenType = config.addrInfo["CAN_FULL_ID_NAME_ISR"]["lenType"]
+		self.tableLenAddr = self.config.addrInfo["CAN_FULL_ID_NAME_ISR"]["tableLenAddr"]
+		self.lenType = self.config.addrInfo["CAN_FULL_ID_NAME_ISR"]["lenType"]
 		self.lenHexDataList = []
 		# self.tableAddr = "0x00c0b5f6"
 		# self.tableLen = 60
-		self.tableAddr = config.addrInfo["CAN_FULL_ID_NAME_ISR"]["tableAddr"]
-		self.tableLen = int(config.addrInfo["CAN_FULL_ID_NAME_ISR"]["tableLen"])
+		self.tableAddr = self.config.addrInfo["CAN_FULL_ID_NAME_ISR"]["tableAddr"]
+		self.tableLen = int(self.config.addrInfo["CAN_FULL_ID_NAME_ISR"]["tableLen"])
 		self.hexDataList = []
 
 	def get_valid_data(self, msgRoute, signalRoute):
@@ -344,36 +345,69 @@ class RoutingTable(object):
 	# 普通报文数据处理
 	def __msgDataHandling(self, index):
 		retList = []
-		retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("TxCANID")]) # ID
-		retList.append(str(len(self.msgDesChList[index]) - 1) + 'u') # dest_mo_num
-		retList.append("255u") # src_ecu_node
-		retList.append("255u") # valid_flg_index(DTC)
-		retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("TxDLC")] + 'u') # DLC
-		if self.msgValidDataList[index][self.msgValidHeaderList.index("RxInterrupt")] == '0': # dest_mo
-			for ch in sorted(self.msgDesChList[index][1:]):
-				retList.append(ch + 'u')
-				retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RouteCondiction")] + 'u')
-			for i in range(5 - len(self.msgDesChList[index]) + 1):
+		if self.config.platInfo == "GAW1.2_NewPlatform" or self.config.platInfo == "Qoros_C6M0":
+			retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("TxCANID")]) # ID
+			retList.append(str(len(self.msgDesChList[index]) - 1) + 'u') # dest_mo_num
+			retList.append("255u") # src_ecu_node
+			retList.append("255u") # valid_flg_index(DTC)
+			retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("TxDLC")] + 'u') # DLC
+			if self.msgValidDataList[index][self.msgValidHeaderList.index("RxInterrupt")] == '0': # dest_mo
+				for ch in sorted(self.msgDesChList[index][1:]):
+					retList.append(ch + 'u')
+					retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RouteCondiction")] + 'u')
+				for i in range(5 - len(self.msgDesChList[index]) + 1):
+					retList.append('0u')
+					retList.append('0u')
+			else:
+				for ch in sorted(self.msgDesChList[index][1:]):
+					retList.append('0u')
+					retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RouteCondiction")] + 'u')
+				for i in range(5 - len(self.msgDesChList[index]) + 1):
+					retList.append('0u')
+					retList.append('0u')
+			if(self.msgValidDataList[index][self.msgValidHeaderList.index("TxPeriod")] != "None"):	
+				retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("TxPeriod")] + 'u') # cycle
+			else:
 				retList.append('0u')
-				retList.append('0u')
-		else:
-			for ch in sorted(self.msgDesChList[index][1:]):
-				retList.append('0u')
-				retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RouteCondiction")] + 'u')
-			for i in range(5 - len(self.msgDesChList[index]) + 1):
-				retList.append('0u')
-				retList.append('0u')
-		if(self.msgValidDataList[index][self.msgValidHeaderList.index("TxPeriod")] != "None"):	
-			retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("TxPeriod")] + 'u') # cycle
-		else:
-			retList.append('0u')
-		retList.append('0u') # msg_index
-		retList.append('0x0000u') # buf_index
-		retList.append('0u') # pre_callback
-		retList.append('0u') # post_callback
-		retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RxInterrupt")]) # RxInterrupt
-		retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RxDTC")]) # RxDTC
-		retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RxChannel")]) # RxCh
+			retList.append('0u') # msg_index
+			retList.append('0x0000u') # buf_index
+			retList.append('0u') # pre_callback
+			retList.append('0u') # post_callback
+			retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RxInterrupt")]) # RxInterrupt
+			retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RxDTC")]) # RxDTC
+			retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RxChannel")]) # RxCh
+		elif self.config.platInfo == "GAW1.2_OldPlatform":
+			retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("TxCANID")]) # ID
+			retList.append(str(len(self.msgDesChList[index]) - 1) + 'u') # dest_mo_num
+			# retList.append("255u") # src_ecu_node
+			retList.append("255u") # valid_flg_index(DTC)
+			# retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("TxDLC")] + 'u') # DLC
+			if self.msgValidDataList[index][self.msgValidHeaderList.index("RxInterrupt")] == '0': # dest_mo
+				for ch in sorted(self.msgDesChList[index][1:]):
+					retList.append(ch + 'u')
+					retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RouteCondiction")] + 'u')
+				for i in range(5 - len(self.msgDesChList[index]) + 1):
+					retList.append('0u')
+					retList.append('0u')
+			else:
+				for ch in sorted(self.msgDesChList[index][1:]):
+					retList.append('0u')
+					retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RouteCondiction")] + 'u')
+				for i in range(5 - len(self.msgDesChList[index]) + 1):
+					retList.append('0u')
+					retList.append('0u')
+			# if(self.msgValidDataList[index][self.msgValidHeaderList.index("TxPeriod")] != "None"):	
+			# 	retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("TxPeriod")] + 'u') # cycle
+			# else:
+			# 	retList.append('0u')
+			retList.append('0u') # msg_index
+			retList.append('0x0000u') # buf_index
+			# retList.append('0u') # pre_callback
+			# retList.append('0u') # post_callback
+			retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RxInterrupt")]) # RxInterrupt
+			retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RxDTC")]) # RxDTC
+			retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RxChannel")]) # RxCh
+
 
 		# print(retList)
 		return retList
@@ -381,22 +415,40 @@ class RoutingTable(object):
 	# 信号报文数据处理
 	def __sigDataHandling(self, index):
 		retList = []
-		retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxCANID")]) # ID
-		retList.append("0u") # dest_mo_num
-		retList.append("255u") # src_ecu_node
-		retList.append("255u") # valid_flg_index(DTC)
-		retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxDLC")] + 'u') # DLC
-		for i in range(5): # dest_mo
-			retList.append('0u')
-			retList.append('0u')
-		retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxPeriod")] + 'u') # cycle
-		retList.append('0u') # msg_index
-		retList.append('0x0000u') # buf_index
-		retList.append("0u") # pre_callback
-		retList.append("0u") # post_callback
-		retList.append('0') # RxInterrupt
-		retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxDTC")]) # RxDTC
-		retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxChannel")]) # RxCh
+		if self.config.platInfo == "GAW1.2_NewPlatform" or self.config.platInfo == "Qoros_C6M0":
+			retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxCANID")]) # ID
+			retList.append("0u") # dest_mo_num
+			retList.append("255u") # src_ecu_node
+			retList.append("255u") # valid_flg_index(DTC)
+			retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxDLC")] + 'u') # DLC
+			for i in range(5): # dest_mo
+				retList.append('0u')
+				retList.append('0u')
+			retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxPeriod")] + 'u') # cycle
+			retList.append('0u') # msg_index
+			retList.append('0x0000u') # buf_index
+			retList.append("0u") # pre_callback
+			retList.append("0u") # post_callback
+			retList.append('0') # RxInterrupt
+			retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxDTC")]) # RxDTC
+			retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxChannel")]) # RxCh
+		elif self.config.platInfo == "GAW1.2_OldPlatform":
+			retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxCANID")]) # ID
+			retList.append("0u") # dest_mo_num
+			# retList.append("255u") # src_ecu_node
+			retList.append("255u") # valid_flg_index(DTC)
+			# retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxDLC")] + 'u') # DLC
+			for i in range(5): # dest_mo
+				retList.append('0u')
+				retList.append('0u')
+			# retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxPeriod")] + 'u') # cycle
+			retList.append('0u') # msg_index
+			retList.append('0x0000u') # buf_index
+			# retList.append("0u") # pre_callback
+			# retList.append("0u") # post_callback
+			retList.append('0') # RxInterrupt
+			retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxDTC")]) # RxDTC
+			retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxChannel")]) # RxCh
 
 		# print(retList)
 		return retList
@@ -470,30 +522,42 @@ class PbDirectRoutingTable(RoutingTable, HexBase):
 	"""PB_DirectRoutingTable"""
 	def __init__(self, config):
 		"""初始化"""
+		self.config = config
 		self.msgValidDataList = []
 		self.msgValidDataListISR = []
 		self.msgDesChList = []
 		self.msgDesChListISR = []
 		self.signalValidDataList = []
 		self.routerTableList = []
-		self.routerTableListHeader = ["RxCANID", "dest_mo_num", "src_ecu_node", "valid_flg_index", "DLC", "dest_mo_index1", "dest_mo_condition1",\
+		if self.config.platInfo == "GAW1.2_NewPlatform" or self.config.platInfo == "Qoros_C6M0":
+			self.routerTableListHeader = ["RxCANID", "dest_mo_num", "src_ecu_node", "valid_flg_index", "DLC", "dest_mo_index1", "dest_mo_condition1",\
+										  "dest_mo_index2", "dest_mo_condition2", "dest_mo_index3", "dest_mo_condition3", "dest_mo_index4", "dest_mo_condition4",\
+										  "dest_mo_index5", "dest_mo_condition5", "cycle", "msg_index", "buf_index", "pre_callback", "post_callback",\
+										  "RxInterrupt", "RxDTC", "RxChannel"]
+		elif self.config.platInfo == "GAW1.2_OldPlatform":
+			self.routerTableListHeader = ["RxCANID", "dest_mo_num",  "valid_flg_index", "dest_mo_index1", "dest_mo_condition1",\
 									  "dest_mo_index2", "dest_mo_condition2", "dest_mo_index3", "dest_mo_condition3", "dest_mo_index4", "dest_mo_condition4",\
-									  "dest_mo_index5", "dest_mo_condition5", "cycle", "msg_index", "buf_index", "pre_callback", "post_callback",\
+									  "dest_mo_index5", "dest_mo_condition5", "msg_index", "buf_index",\
 									  "RxInterrupt", "RxDTC", "RxChannel"]
+										  
 		self.routerTableISRList = []
 		self.routerTableFIFOList = []
-		self.PB_DirectRoutingTable = []		
-		self.structType = ["uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint16", "uint16", "uint16", "uint8", "uint8"]
-		self.structLen = 22
+		self.PB_DirectRoutingTable = []
+		if self.config.platInfo == "GAW1.2_NewPlatform" or self.config.platInfo == "Qoros_C6M0":	
+			self.structType = ["uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint16", "uint16", "uint16", "uint8", "uint8"]
+			self.structLen = 22
+		elif self.config.platInfo == "GAW1.2_OldPlatform":
+			self.structType = ["uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint16", "uint16"]
+			self.structLen = 16
 		# self.tableLenAddr = "0x00c08001"
 		# self.lenType = "uint8"
-		self.tableLenAddr = config.addrInfo["PB_DirectRoutingTable"]["tableLenAddr"]
-		self.lenType = config.addrInfo["PB_DirectRoutingTable"]["lenType"]
+		self.tableLenAddr = self.config.addrInfo["PB_DirectRoutingTable"]["tableLenAddr"]
+		self.lenType = self.config.addrInfo["PB_DirectRoutingTable"]["lenType"]
 		self.lenHexDataList = []
 		# self.tableAddr = "0x00c094be"
 		# self.tableLen = 20
-		self.tableAddr = config.addrInfo["PB_DirectRoutingTable"]["tableAddr"]
-		self.tableLen = int(config.addrInfo["PB_DirectRoutingTable"]["tableLen"])
+		self.tableAddr = self.config.addrInfo["PB_DirectRoutingTable"]["tableAddr"]
+		self.tableLen = int(self.config.addrInfo["PB_DirectRoutingTable"]["tableLen"])
 		self.hexDataList = []
 
 	# 创建PB_DirectRoutingTable数组
@@ -521,30 +585,43 @@ class PbMsgRoutingTable(RoutingTable, HexBase):
 	"""PB_MsgRoutingTable"""
 	def __init__(self, config):
 		"""初始化"""
+		self.config = config
 		self.msgValidDataList = []
 		self.msgValidDataListISR = []
 		self.msgDesChList = []
 		self.msgDesChListISR = []
 		self.signalValidDataList = []
 		self.routerTableList = []
-		self.routerTableListHeader = ["RxCANID", "dest_mo_num", "src_ecu_node", "valid_flg_index", "DLC", "dest_mo_index1", "dest_mo_condition1",\
+		if self.config.platInfo == "GAW1.2_NewPlatform" or self.config.platInfo == "Qoros_C6M0":
+			self.routerTableListHeader = ["RxCANID", "dest_mo_num", "src_ecu_node", "valid_flg_index", "DLC", "dest_mo_index1", "dest_mo_condition1",\
+										  "dest_mo_index2", "dest_mo_condition2", "dest_mo_index3", "dest_mo_condition3", "dest_mo_index4", "dest_mo_condition4",\
+										  "dest_mo_index5", "dest_mo_condition5", "cycle", "msg_index", "buf_index", "pre_callback", "post_callback",\
+										  "RxInterrupt", "RxDTC", "RxChannel"]
+		elif self.config.platInfo == "GAW1.2_OldPlatform":
+			self.routerTableListHeader = ["RxCANID", "dest_mo_num",  "valid_flg_index", "dest_mo_index1", "dest_mo_condition1",\
 									  "dest_mo_index2", "dest_mo_condition2", "dest_mo_index3", "dest_mo_condition3", "dest_mo_index4", "dest_mo_condition4",\
-									  "dest_mo_index5", "dest_mo_condition5", "cycle", "msg_index", "buf_index", "pre_callback", "post_callback",\
+									  "dest_mo_index5", "dest_mo_condition5", "msg_index", "buf_index",\
 									  "RxInterrupt", "RxDTC", "RxChannel"]
+
+
 		self.routerTableISRList = []
 		self.routerTableFIFOList = []
-		self.PB_MsgRoutingTable = []		
-		self.structType = ["uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint16", "uint16", "uint16", "uint8", "uint8"]
-		self.structLen = 22
+		self.PB_MsgRoutingTable = []
+		if self.config.platInfo == "GAW1.2_NewPlatform" or self.config.platInfo == "Qoros_C6M0":	
+			self.structType = ["uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint16", "uint16", "uint16", "uint8", "uint8"]
+			self.structLen = 22
+		elif self.config.platInfo == "GAW1.2_OldPlatform":
+			self.structType = ["uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint16", "uint16"]
+			self.structLen = 16
 		# self.tableLenAddr = "0x00c0a46d"
 		# self.lenType = "uint8"
-		self.tableLenAddr = config.addrInfo["PB_MsgRoutingTable"]["tableLenAddr"]
-		self.lenType = config.addrInfo["PB_MsgRoutingTable"]["lenType"]
+		self.tableLenAddr = self.config.addrInfo["PB_MsgRoutingTable"]["tableLenAddr"]
+		self.lenType = self.config.addrInfo["PB_MsgRoutingTable"]["lenType"]
 		self.lenHexDataList = []
 		# self.tableAddr = "0x00c14200"
 		# self.tableLen = 256
-		self.tableAddr = config.addrInfo["PB_MsgRoutingTable"]["tableAddr"]
-		self.tableLen = int(config.addrInfo["PB_MsgRoutingTable"]["tableLen"])
+		self.tableAddr = self.config.addrInfo["PB_MsgRoutingTable"]["tableAddr"]
+		self.tableLen = int(self.config.addrInfo["PB_MsgRoutingTable"]["tableLen"])
 		self.hexDataList = []
 
 		
@@ -577,6 +654,7 @@ class PbMsgRecvTable(HexBase):
 	"""PB_Msg_Recv_Table"""
 	def __init__(self, config):
 		"""初始化"""
+		self.config = config
 		self.signalValidDataList = []
 		self.PBMsgRecvTableList = []
 		self.PB_Msg_Recv_Table = []
@@ -585,13 +663,13 @@ class PbMsgRecvTable(HexBase):
 		self.structLen = 12
 		# self.tableLenAddr = "0x00c0a51f"
 		# self.lenType = "uint8"
-		self.tableLenAddr = config.addrInfo["PB_Msg_Recv_Table"]["tableLenAddr"]
-		self.lenType = config.addrInfo["PB_Msg_Recv_Table"]["lenType"]
+		self.tableLenAddr = self.config.addrInfo["PB_Msg_Recv_Table"]["tableLenAddr"]
+		self.lenType = self.config.addrInfo["PB_Msg_Recv_Table"]["lenType"]
 		self.lenHexDataList = []
 		# self.tableAddr = "0x00c07cf0"
 		# self.tableLen = 64
-		self.tableAddr = config.addrInfo["PB_Msg_Recv_Table"]["tableAddr"]
-		self.tableLen = int(config.addrInfo["PB_Msg_Recv_Table"]["tableLen"])
+		self.tableAddr = self.config.addrInfo["PB_Msg_Recv_Table"]["tableAddr"]
+		self.tableLen = int(self.config.addrInfo["PB_Msg_Recv_Table"]["tableLen"])
 		self.hexDataList = []
 
 		
@@ -669,23 +747,28 @@ class PbSignalRoutingTable(HexBase):
 	"""PB_Signal_Routing_Table"""
 	def __init__(self, config):
 		"""初始化"""
+		self.config = config
 		self.txCanIdList = []
 		self.rxCanIdList = []
 		self.validDataListList = []
 		self.srcSignalListList = []
 		self.PbSignalRoutingTableList = []
-		self.PB_Signal_Routing_Table = []		
-		self.structType = ["uint16", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8"]
-		self.structLen = 8
+		self.PB_Signal_Routing_Table = []
+		if self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "GAW1.2_NewPlatform":	
+			self.structType = ["uint16", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8"]
+			self.structLen = 8
+		elif self.config.platInfo == "Qoros_C6M0":	
+			self.structType = ["uint16", "uint8", "uint8", "uint16", "uint8", "uint8", "uint8", "uint8"]
+			self.structLen = 10
 		# self.tableLenAddr = ""
 		# self.lenType = "uint8"
-		self.tableLenAddr = config.addrInfo["PB_Signal_Routing_Table"]["tableLenAddr"]
-		self.lenType = config.addrInfo["PB_Signal_Routing_Table"]["lenType"]
+		self.tableLenAddr = self.config.addrInfo["PB_Signal_Routing_Table"]["tableLenAddr"]
+		self.lenType = self.config.addrInfo["PB_Signal_Routing_Table"]["lenType"]
 		self.lenHexDataList = []
 		# self.tableAddr = "0x00c12200"
 		# self.tableLen = 1024
-		self.tableAddr = config.addrInfo["PB_Signal_Routing_Table"]["tableAddr"]
-		self.tableLen = int(config.addrInfo["PB_Signal_Routing_Table"]["tableLen"])
+		self.tableAddr = self.config.addrInfo["PB_Signal_Routing_Table"]["tableAddr"]
+		self.tableLen = int(self.config.addrInfo["PB_Signal_Routing_Table"]["tableLen"])
 		self.hexDataList = []
 
 	def get_valid_data(self, signalRoute):
@@ -740,14 +823,24 @@ class PbSignalRoutingTable(HexBase):
 	def __signal_route_handling(self, subList):
 		"""对获取的每一行数据处理，得到信号路由表(PB_Signal_Routing_Table)的一行"""
 		retList = []
+		if self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "GAW1.2_NewPlatform":
+			retList.append(self.__calculate_source_index(subList) + 'u')
+			retList.append(str(int(subList[self.sigValidHeaderList.index("RxStartBit")])%8) + 'u')
+			retList.append(subList[self.sigValidHeaderList.index("RxSigLen")] + 'u')
+			retList.append(str(int(subList[self.sigValidHeaderList.index("TxStartBit")])//8) + 'u')
+			retList.append(str(int(subList[self.sigValidHeaderList.index("TxStartBit")])%8) + 'u')
+			retList.append(subList[self.sigValidHeaderList.index("ByteOrder")] + 'u')
+			retList.append('0xffu')
+		elif self.config.platInfo == "Qoros_C6M0":	
+			retList.append(self.__calculate_source_index(subList) + 'u')
+			retList.append(str(int(subList[self.sigValidHeaderList.index("RxStartBit")])%8) + 'u')
+			retList.append(subList[self.sigValidHeaderList.index("RxSigLen")] + 'u')
+			retList.append(subList[self.sigValidHeaderList.index("ByteOrder")] + 'u')
+			retList.append(str(int(subList[self.sigValidHeaderList.index("TxStartBit")])//8) + 'u')
+			retList.append(str(int(subList[self.sigValidHeaderList.index("TxStartBit")])%8) + 'u')	
+			retList.append(subList[self.sigValidHeaderList.index("TxByteOrder")] + 'u')
+			retList.append('0xffu')
 
-		retList.append(self.__calculate_source_index(subList) + 'u')
-		retList.append(str(int(subList[self.sigValidHeaderList.index("RxStartBit")])%8) + 'u')
-		retList.append(subList[self.sigValidHeaderList.index("RxSigLen")] + 'u')
-		retList.append(str(int(subList[self.sigValidHeaderList.index("TxStartBit")])//8) + 'u')
-		retList.append(str(int(subList[self.sigValidHeaderList.index("TxStartBit")])%8) + 'u')
-		retList.append(subList[self.sigValidHeaderList.index("ByteOrder")] + 'u')
-		retList.append('0xffu')
 
 		# print(retList)
 		return retList
@@ -800,24 +893,29 @@ class PbMsgSendTable(HexBase):
 	"""PB_Msg_Send_Table"""
 	def __init__(self, config):
 		"""初始化"""
+		self.config = config
 		self.txCanIdList = []
 		self.validDataList = []
 		self.srcSignalListList = [] # 同一ID发送信号对应的源信号数量
 		# self.rxCanIdList = []
 		self.txCanIdrxCanIdCountList = []
 		self.PbMsgSendTableList = []
-		self.PB_Msg_Send_Table = []		
-		self.structType = ["uint32", "uint16", "uint8", "uint8", "uint8", "uint8", "uint16", "uint8", "uint8"] 
-		self.structLen = 14
+		self.PB_Msg_Send_Table = []	
+		if self.config.platInfo == "GAW1.2_NewPlatform" or self.config.platInfo == "Qoros_C6M0":
+			self.structType = ["uint32", "uint16", "uint8", "uint8", "uint8", "uint8", "uint16", "uint8", "uint8"] 
+			self.structLen = 14
+		elif self.config.platInfo == "GAW1.2_OldPlatform":
+			self.structType = ["uint32", "uint16", "uint8", "uint8", "uint8", "uint8", "uint16"]
+			self.structLen = 12
 		# self.tableLenAddr = ""
 		# self.lenType = "uint8"
-		self.tableLenAddr = config.addrInfo["PB_Msg_Send_Table"]["tableLenAddr"]
-		self.lenType = config.addrInfo["PB_Msg_Send_Table"]["lenType"]
+		self.tableLenAddr = self.config.addrInfo["PB_Msg_Send_Table"]["tableLenAddr"]
+		self.lenType = self.config.addrInfo["PB_Msg_Send_Table"]["lenType"]
 		self.lenHexDataList = []
 		# self.tableAddr = "0x00c08002"
 		# self.tableLen = 128
-		self.tableAddr = config.addrInfo["PB_Msg_Send_Table"]["tableAddr"]
-		self.tableLen = int(config.addrInfo["PB_Msg_Send_Table"]["tableLen"])
+		self.tableAddr = self.config.addrInfo["PB_Msg_Send_Table"]["tableAddr"]
+		self.tableLen = int(self.config.addrInfo["PB_Msg_Send_Table"]["tableLen"])
 		self.hexDataList = []
 
 		
@@ -899,16 +997,27 @@ class PbMsgSendTable(HexBase):
 	def __send_signal_data_handling(self, index):
 		"""对发送信号ID进行处理，提取信号发送表的子元素"""
 		retList = []
-		
-		retList.append(self.validDataList[index][self.sigValidHeaderList.index("TxCANID")] + 'u')
-		retList.append(self.validDataList[index][self.sigValidHeaderList.index("TxPeriod")] + 'u')
-		retList.append(self.validDataList[index][self.sigValidHeaderList.index("TxChannle")] + 'u')
-		retList.append(self.validDataList[index][self.sigValidHeaderList.index("TxDLC")] + 'u')
-		retList.append(self.validDataList[index][self.sigValidHeaderList.index("ByteOrder")] + 'u')
-		retList.append(str(len(self.srcSignalListList[index])) + 'u')
-		retList.append(self.__calculate_first_source_index(index) + 'u')
-		retList.append('0u')
-		retList.append('0u')
+		if self.config.platInfo == "GAW1.2_NewPlatform" or self.config.platInfo == "Qoros_C6M0":
+			retList.append(self.validDataList[index][self.sigValidHeaderList.index("TxCANID")] + 'u')
+			retList.append(self.validDataList[index][self.sigValidHeaderList.index("TxPeriod")] + 'u')
+			retList.append(self.validDataList[index][self.sigValidHeaderList.index("TxChannle")] + 'u')
+			retList.append(self.validDataList[index][self.sigValidHeaderList.index("TxDLC")] + 'u')
+			retList.append(self.validDataList[index][self.sigValidHeaderList.index("ByteOrder")] + 'u')
+			retList.append(str(len(self.srcSignalListList[index])) + 'u')
+			retList.append(self.__calculate_first_source_index(index) + 'u')
+			retList.append('0u')
+			retList.append('0u')
+		elif self.config.platInfo == "GAW1.2_OldPlatform":
+			retList.append(self.validDataList[index][self.sigValidHeaderList.index("TxCANID")] + 'u')
+			retList.append(self.validDataList[index][self.sigValidHeaderList.index("TxPeriod")] + 'u')
+			retList.append(self.validDataList[index][self.sigValidHeaderList.index("TxChannle")] + 'u')
+			retList.append(self.validDataList[index][self.sigValidHeaderList.index("TxDLC")] + 'u')
+			retList.append(self.validDataList[index][self.sigValidHeaderList.index("ByteOrder")] + 'u')
+			retList.append(str(len(self.srcSignalListList[index])) + 'u')
+			retList.append(self.__calculate_first_source_index(index) + 'u')
+			# retList.append('0u')
+			# retList.append('0u')
+
 
 		# print(retList)
 		return retList		
@@ -1041,6 +1150,7 @@ class PbMsgSendSchedule(HexBase):
 	"""PB_Msg_Send_Schedule"""
 	def __init__(self, config):
 		"""初始化"""
+		self.config = config
 		self.txCanIdPeriodList = []
 		# self.srcSignalListList = [] # 同一ID发送信号对应的源信号表索引
 		# self.recvSignalList = []
@@ -1051,13 +1161,13 @@ class PbMsgSendSchedule(HexBase):
 		self.structLen = 22
 		# self.tableLenAddr = ""
 		# self.lenType = "uint8"
-		self.tableLenAddr = config.addrInfo["PB_Msg_Send_Schedule"]["tableLenAddr"]
-		self.lenType = config.addrInfo["PB_Msg_Send_Schedule"]["lenType"]
+		self.tableLenAddr = self.config.addrInfo["PB_Msg_Send_Schedule"]["tableLenAddr"]
+		self.lenType = self.config.addrInfo["PB_Msg_Send_Schedule"]["lenType"]
 		self.lenHexDataList = []
 		# self.tableAddr = "0x00c09b0e"
 		# self.tableLen = 10
-		self.tableAddr = config.addrInfo["PB_Msg_Send_Schedule"]["tableAddr"]
-		self.tableLen = int(config.addrInfo["PB_Msg_Send_Schedule"]["tableLen"])
+		self.tableAddr = self.config.addrInfo["PB_Msg_Send_Schedule"]["tableAddr"]
+		self.tableLen = int(self.config.addrInfo["PB_Msg_Send_Schedule"]["tableLen"])
 		self.hexDataList = []
 
 		
@@ -1181,6 +1291,7 @@ class PbMsgRevInitVal(PbMsgRevInitDefaultValBase, HexBase):
 	"""PB_MsgRevInitVal"""
 	def __init__(self, config):
 		"""初始化"""
+		self.config = config
 		self.srcSignalInfoList = []
 		self.validDataList = []
 		self.PbMsgRevInitValList = []
@@ -1189,13 +1300,13 @@ class PbMsgRevInitVal(PbMsgRevInitDefaultValBase, HexBase):
 		self.structLen = 8
 		# self.tableLenAddr = ""
 		# self.lenType = "uint8"
-		self.tableLenAddr = config.addrInfo["PB_MsgRevInitVal"]["tableLenAddr"]
-		self.lenType = config.addrInfo["PB_MsgRevInitVal"]["lenType"]
+		self.tableLenAddr = self.config.addrInfo["PB_MsgRevInitVal"]["tableLenAddr"]
+		self.lenType = self.config.addrInfo["PB_MsgRevInitVal"]["lenType"]
 		self.lenHexDataList = []
 		# self.tableAddr = "0x00c0bafa"
 		# self.tableLen = 128
-		self.tableAddr = config.addrInfo["PB_MsgRevInitVal"]["tableAddr"]
-		self.tableLen = int(config.addrInfo["PB_MsgRevInitVal"]["tableLen"])
+		self.tableAddr = self.config.addrInfo["PB_MsgRevInitVal"]["tableAddr"]
+		self.tableLen = int(self.config.addrInfo["PB_MsgRevInitVal"]["tableLen"])
 		self.hexDataList = []
 
 	def data_handle(self):
@@ -1244,6 +1355,7 @@ class PbMsgRevDefaultVal(PbMsgRevInitDefaultValBase, HexBase):
 	"""PB_MsgRevDefaultVal"""
 	def __init__(self, config):
 		"""初始化"""
+		self.config = config
 		self.srcSignalInfoList = []
 		self.validDataList = []
 		self.PbMsgRevDefaultVal = []
@@ -1252,13 +1364,13 @@ class PbMsgRevDefaultVal(PbMsgRevInitDefaultValBase, HexBase):
 		self.structLen = 8
 		# self.tableLenAddr = ""
 		# self.lenType = "uint8"
-		self.tableLenAddr = config.addrInfo["PB_MsgRevDefaultVal"]["tableLenAddr"]
-		self.lenType = config.addrInfo["PB_MsgRevDefaultVal"]["lenType"]
+		self.tableLenAddr = self.config.addrInfo["PB_MsgRevDefaultVal"]["tableLenAddr"]
+		self.lenType = self.config.addrInfo["PB_MsgRevDefaultVal"]["lenType"]
 		self.lenHexDataList = []
 		# self.tableAddr = "0x00c16c00"
 		# self.tableLen = 128
-		self.tableAddr = config.addrInfo["PB_MsgRevDefaultVal"]["tableAddr"]
-		self.tableLen = int(config.addrInfo["PB_MsgRevDefaultVal"]["tableLen"])
+		self.tableAddr = self.config.addrInfo["PB_MsgRevDefaultVal"]["tableAddr"]
+		self.tableLen = int(self.config.addrInfo["PB_MsgRevDefaultVal"]["tableLen"])
 		self.hexDataList = []
 
 		
@@ -1311,16 +1423,25 @@ class Id2IndexTable(RoutingTable, HexBase):
 	"""id2index_table"""
 	def __init__(self, config):
 		"""初始化"""
+		self.config = config
 		self.msgValidDataList = []
 		self.msgValidDataListISR = []
 		self.msgDesChList = []
 		self.msgDesChListISR = []
 		self.signalValidDataList = []
 		self.routerTableList = []
-		self.routerTableListHeader = ["RxCANID", "dest_mo_num", "src_ecu_node", "valid_flg_index", "DLC", "dest_mo_index1", "dest_mo_condition1",\
+		if self.config.platInfo == "GAW1.2_NewPlatform" or self.config.platInfo == "Qoros_C6M0":
+			self.routerTableListHeader = ["RxCANID", "dest_mo_num", "src_ecu_node", "valid_flg_index", "DLC", "dest_mo_index1", "dest_mo_condition1",\
+										  "dest_mo_index2", "dest_mo_condition2", "dest_mo_index3", "dest_mo_condition3", "dest_mo_index4", "dest_mo_condition4",\
+										  "dest_mo_index5", "dest_mo_condition5", "cycle", "msg_index", "buf_index", "pre_callback", "post_callback",\
+										  "RxInterrupt", "RxDTC", "RxChannel"]
+		elif self.config.platInfo == "GAW1.2_OldPlatform":
+			self.routerTableListHeader = ["RxCANID", "dest_mo_num", "valid_flg_index", "dest_mo_index1", "dest_mo_condition1",\
 									  "dest_mo_index2", "dest_mo_condition2", "dest_mo_index3", "dest_mo_condition3", "dest_mo_index4", "dest_mo_condition4",\
-									  "dest_mo_index5", "dest_mo_condition5", "cycle", "msg_index", "buf_index", "pre_callback", "post_callback",\
+									  "dest_mo_index5", "dest_mo_condition5", "msg_index", "buf_index",\
 									  "RxInterrupt", "RxDTC", "RxChannel"]
+
+
 		self.routerTableISRList = []
 		self.routerTableFIFOList = []
 		self.PB_MsgRoutingTable = []
@@ -1346,8 +1467,8 @@ class Id2IndexTable(RoutingTable, HexBase):
 		self.structLen = 4096
 		# self.tableLenAddr = ""
 		# self.lenType = "uint8"
-		self.tableLenAddr = config.addrInfo["Id2IndexTableA"]["tableLenAddr"]
-		self.lenType = config.addrInfo["Id2IndexTableA"]["lenType"]
+		self.tableLenAddr = self.config.addrInfo["Id2IndexTableA"]["tableLenAddr"]
+		self.lenType = self.config.addrInfo["Id2IndexTableA"]["lenType"]
 		self.lenHexDataList = []	
 		# self.tableAddrA = "0x00c0a5f6"
 		# self.tableAddrB = "0x00c06804"
@@ -1355,14 +1476,14 @@ class Id2IndexTable(RoutingTable, HexBase):
 		# self.tableAddrD = "0x00c0d2ea"
 		# self.tableAddrE = "0x00c10200"
 		# self.tableAddrF = "0x00c11200"
-		self.tableAddrA = config.addrInfo["Id2IndexTableA"]["tableAddr"]
-		self.tableAddrB = config.addrInfo["Id2IndexTableB"]["tableAddr"]
-		self.tableAddrC = config.addrInfo["Id2IndexTableC"]["tableAddr"]
-		self.tableAddrD = config.addrInfo["Id2IndexTableD"]["tableAddr"]
-		self.tableAddrE = config.addrInfo["Id2IndexTableE"]["tableAddr"]
-		self.tableAddrF = config.addrInfo["Id2IndexTableF"]["tableAddr"]
+		self.tableAddrA = self.config.addrInfo["Id2IndexTableA"]["tableAddr"]
+		self.tableAddrB = self.config.addrInfo["Id2IndexTableB"]["tableAddr"]
+		self.tableAddrC = self.config.addrInfo["Id2IndexTableC"]["tableAddr"]
+		self.tableAddrD = self.config.addrInfo["Id2IndexTableD"]["tableAddr"]
+		self.tableAddrE = self.config.addrInfo["Id2IndexTableE"]["tableAddr"]
+		self.tableAddrF = self.config.addrInfo["Id2IndexTableF"]["tableAddr"]
 		# self.tableLen = 1
-		self.tableLen = int(config.addrInfo["Id2IndexTableA"]["tableLen"])
+		self.tableLen = int(self.config.addrInfo["Id2IndexTableA"]["tableLen"])
 		self.hexDataList = []
 
 	def data_handle(self):

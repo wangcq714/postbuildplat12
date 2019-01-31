@@ -13,13 +13,19 @@ from tkinter.filedialog import askdirectory, askopenfilename
 
 class SignalTableConvert(object):
 	'''信号表转换'''
-	def __init__(self):
+	def __init__(self, config):
 		#通道映射
+		self.config = config
 		self.Can2num = {"CAN1":1, "CAN2":2, "CAN3":3, "CAN4":4, "CAN5":5, "CAN6":6}
 		#目标Excel表头
-		self.TableHeader = ["SignalName", "TxMeesageName", "TxCANID", "TxPeriod", "TxDLC", "TxChannle", \
-						"TxStartBit", "TxSigLen", "RxMeesageName", "RxCANID", "RxPeriod", "RxDLC", \
-						"RxChannel", "RxStartBit", "RxSigLen", "ByteOrder", "RxDTC", "inival", "dfVal", "desName"]
+		if self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "GAW1.2_NewPlatform":
+			self.TableHeader = ["SignalName", "TxMeesageName", "TxCANID", "TxPeriod", "TxDLC", "TxChannle", \
+							"TxStartBit", "TxSigLen", "RxMeesageName", "RxCANID", "RxPeriod", "RxDLC", \
+							"RxChannel", "RxStartBit", "RxSigLen", "ByteOrder", "RxDTC", "inival", "dfVal", "desName"]
+		elif self.config.platInfo == "Qoros_C6M0":
+			self.TableHeader = ["SignalName", "TxMeesageName", "TxCANID", "TxPeriod", "TxDLC", "TxChannle", \
+							"TxStartBit", "TxSigLen", "TxByteOrder", "RxMeesageName", "RxCANID", "RxPeriod", "RxDLC", \
+							"RxChannel", "RxStartBit", "RxSigLen", "ByteOrder", "RxDTC", "inival", "dfVal", "desName"]
 		self.pathname = ""
 		self.ChannalMapping = {}
 		self.src_table = {}
@@ -129,26 +135,50 @@ class SignalTableConvert(object):
 
 	#创建目标表列表
 	def build_des_table(self) -> None:
-		self.des_table.append(self.src_table["信号名称"])
-		self.des_table.append(self.get_TxMeesageName())
-		self.des_table.append(self.src_table["des_目标网段ID"])
-		self.des_table.append(self.src_table["des_周期"])
-		self.des_table.append(self.src_table["des_dlc"])
-		self.des_table.append(self.ToNetwork_num(self.src_table["des_目标网段"]))
-		self.des_table.append(self.bytebit2bit(self.src_table["des_起始byte"], self.src_table["des_起始bit"]))
-		self.des_table.append(self.src_table["des_信号长度"])
-		self.des_table.append(self.get_RxMeesageName())
-		self.des_table.append(self.src_table["src_源报文ID"])
-		self.des_table.append(self.src_table["src_周期"])
-		self.des_table.append(self.src_table["src_dlc"])
-		self.des_table.append(self.ToNetwork_num(self.src_table["src_源网段"]))
-		self.des_table.append(self.bytebit2bit(self.src_table["src_起始byte"], self.src_table["src_起始bit"]))
-		self.des_table.append(self.src_table["src_信号长度"])
-		self.des_table.append(self.src_table["src_信号格式"])
-		self.des_table.append(self.get_DTC())
-		self.des_table.append(self.src_table["src_初始值"])
-		self.des_table.append(self.src_table["src_默认值"])
-		self.des_table.append(self.src_table["des_目标网段"])
+		print(self.config.platInfo, "sig")
+		if self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "GAW1.2_NewPlatform":
+			self.des_table.append(self.src_table["信号名称"])
+			self.des_table.append(self.get_TxMeesageName())
+			self.des_table.append(self.src_table["des_目标网段ID"])
+			self.des_table.append(self.src_table["des_周期"])
+			self.des_table.append(self.src_table["des_dlc"])
+			self.des_table.append(self.ToNetwork_num(self.src_table["des_目标网段"]))
+			self.des_table.append(self.bytebit2bit(self.src_table["des_起始byte"], self.src_table["des_起始bit"]))
+			self.des_table.append(self.src_table["des_信号长度"])
+			self.des_table.append(self.get_RxMeesageName())
+			self.des_table.append(self.src_table["src_源报文ID"])
+			self.des_table.append(self.src_table["src_周期"])
+			self.des_table.append(self.src_table["src_dlc"])
+			self.des_table.append(self.ToNetwork_num(self.src_table["src_源网段"]))
+			self.des_table.append(self.bytebit2bit(self.src_table["src_起始byte"], self.src_table["src_起始bit"]))
+			self.des_table.append(self.src_table["src_信号长度"])
+			self.des_table.append(self.src_table["src_信号格式"])
+			self.des_table.append(self.get_DTC())
+			self.des_table.append(self.src_table["src_初始值"])
+			self.des_table.append(self.src_table["src_默认值"])
+			self.des_table.append(self.src_table["des_目标网段"])
+		elif self.config.platInfo == "Qoros_C6M0":
+			self.des_table.append(self.src_table["信号名称"])
+			self.des_table.append(self.get_TxMeesageName())
+			self.des_table.append(self.src_table["des_目标网段ID"])
+			self.des_table.append(self.src_table["des_周期"])
+			self.des_table.append(self.src_table["des_dlc"])
+			self.des_table.append(self.ToNetwork_num(self.src_table["des_目标网段"]))
+			self.des_table.append(self.bytebit2bit(self.src_table["des_起始byte"], self.src_table["des_起始bit"]))
+			self.des_table.append(self.src_table["des_信号长度"])
+			self.des_table.append(self.src_table["des_信号格式"])
+			self.des_table.append(self.get_RxMeesageName())
+			self.des_table.append(self.src_table["src_源报文ID"])
+			self.des_table.append(self.src_table["src_周期"])
+			self.des_table.append(self.src_table["src_dlc"])
+			self.des_table.append(self.ToNetwork_num(self.src_table["src_源网段"]))
+			self.des_table.append(self.bytebit2bit(self.src_table["src_起始byte"], self.src_table["src_起始bit"]))
+			self.des_table.append(self.src_table["src_信号长度"])
+			self.des_table.append(self.src_table["src_信号格式"])
+			self.des_table.append(self.get_DTC())
+			self.des_table.append(self.src_table["src_初始值"])
+			self.des_table.append(self.src_table["src_默认值"])
+			self.des_table.append(self.src_table["des_目标网段"])
 
 
 	# 信号列表处理，将列表中的所有int转为str

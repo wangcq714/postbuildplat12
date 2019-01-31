@@ -14,14 +14,17 @@ def run(config, msgRoute, signalRoute, readHex):
 	# 读取数据
 	# config.read_data()
 	msgRoute.read_data("O")
-	signalRoute.read_data("T")
-	readHex.read_hex()
 
-	print(config.platInfo)
+	if config.platInfo == "GAW1.2_OldPlatform" or config.platInfo == "GAW1.2_NewPlatform":
+		signalRoute.read_data("T")
+	elif config.platInfo == "Qoros_C6M0":
+		signalRoute.read_data("U")
+
+	readHex.read_hex()
 
 	# 数据合法性检查
 	# 创建数据检查模块
-	checkError = checkerror.CheckError()
+	checkError = checkerror.CheckError(config)
 	# 字面上合法性校验
 	ret = checkError.msg_literal_check(msgRoute)
 	if ret:
@@ -161,50 +164,52 @@ def run(config, msgRoute, signalRoute, readHex):
 	# 只有当用户模式为开发者模式时才会生成配置表文件；客户模式下只可操作加密hex.
 	if config.user_type == "Developer":
 		# 写入Table.c文件
-		writeData.write_table_c(canFullIdNameISR.CAN_FULL_ID_NAME_ISR)
-		writeData.write_table_c(pbDirectRoutingTable.PB_DirectRoutingTable)
-		writeData.write_table_c(pbMsgRoutingTable.PB_MsgRoutingTable)
-		writeData.write_table_c(pbMsgRecvTable.PB_Msg_Recv_Table)
-		writeData.write_table_c(pbSignalRoutingTable.PB_Signal_Routing_Table)
-		writeData.write_table_c(pbMsgSendTable.PB_Msg_Send_Table)
-		writeData.write_table_c(pbMsgSrcTable.PB_Msg_Src_Table)
-		writeData.write_table_c(pbMsgSendSchedule.PB_Msg_Send_Schedule)
-		# writeData.write_table_c(id2IndexTable.id2index_table_a)
-		# writeData.write_table_c(id2IndexTable.id2index_table_b)
-		# writeData.write_table_c(id2IndexTable.id2index_table_c)
-		# writeData.write_table_c(id2IndexTable.id2index_table_d)
-		# writeData.write_table_c(id2IndexTable.id2index_table_e)
-		# writeData.write_table_c(id2IndexTable.id2index_table_f)
-		writeData.write_table_c(pbMsgRevInitVal.PB_MsgRevInitVal)
-		writeData.write_table_c(pbMsgRevDefaultVal.PB_MsgRevDefaultVal)
-		writeData.write_table_c(id2IndexTable.id2index_table_a)
-		writeData.write_table_c(id2IndexTable.id2index_table_b)
-		writeData.write_table_c(id2IndexTable.id2index_table_c)
-		writeData.write_table_c(id2IndexTable.id2index_table_d)
-		writeData.write_table_c(id2IndexTable.id2index_table_e)
-		writeData.write_table_c(id2IndexTable.id2index_table_f)
+		if config.platInfo == "GAW1.2_OldPlatform" or config.platInfo == "Qoros_C6M0":
+			writeData.write_table_c(canFullIdNameISR.CAN_FULL_ID_NAME_ISR)
+			writeData.write_table_c(pbDirectRoutingTable.PB_DirectRoutingTable)
+			writeData.write_table_c(pbMsgRoutingTable.PB_MsgRoutingTable)
+			writeData.write_table_c(pbMsgRecvTable.PB_Msg_Recv_Table)
+			writeData.write_table_c(pbSignalRoutingTable.PB_Signal_Routing_Table)
+			writeData.write_table_c(pbMsgSendTable.PB_Msg_Send_Table)
+			writeData.write_table_c(pbMsgSrcTable.PB_Msg_Src_Table)
+			writeData.write_table_c(pbMsgSendSchedule.PB_Msg_Send_Schedule)
+			# writeData.write_table_c(id2IndexTable.id2index_table_a)
+			# writeData.write_table_c(id2IndexTable.id2index_table_b)
+			# writeData.write_table_c(id2IndexTable.id2index_table_c)
+			# writeData.write_table_c(id2IndexTable.id2index_table_d)
+			# writeData.write_table_c(id2IndexTable.id2index_table_e)
+			# writeData.write_table_c(id2IndexTable.id2index_table_f)
+			writeData.write_table_c(pbMsgRevInitVal.PB_MsgRevInitVal)
+			writeData.write_table_c(pbMsgRevDefaultVal.PB_MsgRevDefaultVal)
+			writeData.write_table_c(id2IndexTable.id2index_table_a)
+			writeData.write_table_c(id2IndexTable.id2index_table_b)
+			writeData.write_table_c(id2IndexTable.id2index_table_c)
+			writeData.write_table_c(id2IndexTable.id2index_table_d)
+			writeData.write_table_c(id2IndexTable.id2index_table_e)
+			writeData.write_table_c(id2IndexTable.id2index_table_f)
 
-		writeData.write_id2index_table_c(id2indextableheader.id2indextable_headerList, id2IndexTable.id2index_table)
+			writeData.write_id2index_table_c(id2indextableheader.id2indextable_headerList, id2IndexTable.id2index_table)
 		
-		# 写入中断初始化文件Proj_Can_Cfg.c
-		writeData.write_proj_can_cfg_c(projcancfgheader.projcancfg_headerList, canFullIdNameISR.CAN_FULL_ID_NAME_ISR)
+		if config.platInfo == "GAW1.2_NewPlatform":
+			# 写入中断初始化文件Proj_Can_Cfg.c
+			writeData.write_proj_can_cfg_c(projcancfgheader.projcancfg_headerList, canFullIdNameISR.CAN_FULL_ID_NAME_ISR)
 
-		# 写入Proj_PostBuild_Cfg.c
-		writeData.write_proj_postbuild_cfg_c(projpostbuildcfgheader.projpostbuildcfg_headerList)
-		writeData.write_proj_postbuild_cfg_c(pbDirectRoutingTable.PB_DirectRoutingTable)
-		writeData.write_proj_postbuild_cfg_c(pbMsgRoutingTable.PB_MsgRoutingTable)
-		writeData.write_proj_postbuild_cfg_c(pbMsgRecvTable.PB_Msg_Recv_Table)
-		writeData.write_proj_postbuild_cfg_c(pbSignalRoutingTable.PB_Signal_Routing_Table)
-		writeData.write_proj_postbuild_cfg_c(pbMsgSendTable.PB_Msg_Send_Table)
-		writeData.write_proj_postbuild_cfg_c(pbMsgSendSchedule.PB_Msg_Send_Schedule)
-		writeData.write_proj_postbuild_cfg_c(pbMsgRevInitVal.PB_MsgRevInitVal)
-		writeData.write_proj_postbuild_cfg_c(pbMsgRevDefaultVal.PB_MsgRevDefaultVal)
-		writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_a)
-		writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_b)
-		writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_c)
-		writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_d)
-		writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_e)
-		writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_f)
+			# 写入Proj_PostBuild_Cfg.c
+			writeData.write_proj_postbuild_cfg_c(projpostbuildcfgheader.projpostbuildcfg_headerList)
+			writeData.write_proj_postbuild_cfg_c(pbDirectRoutingTable.PB_DirectRoutingTable)
+			writeData.write_proj_postbuild_cfg_c(pbMsgRoutingTable.PB_MsgRoutingTable)
+			writeData.write_proj_postbuild_cfg_c(pbMsgRecvTable.PB_Msg_Recv_Table)
+			writeData.write_proj_postbuild_cfg_c(pbSignalRoutingTable.PB_Signal_Routing_Table)
+			writeData.write_proj_postbuild_cfg_c(pbMsgSendTable.PB_Msg_Send_Table)
+			writeData.write_proj_postbuild_cfg_c(pbMsgSendSchedule.PB_Msg_Send_Schedule)
+			writeData.write_proj_postbuild_cfg_c(pbMsgRevInitVal.PB_MsgRevInitVal)
+			writeData.write_proj_postbuild_cfg_c(pbMsgRevDefaultVal.PB_MsgRevDefaultVal)
+			writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_a)
+			writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_b)
+			writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_c)
+			writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_d)
+			writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_e)
+			writeData.write_proj_postbuild_cfg_c(id2IndexTable.id2index_table_f)
 
 	# 写入hex
 	writeData.write_hex(readHex.hexData)

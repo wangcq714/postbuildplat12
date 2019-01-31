@@ -5,7 +5,8 @@ from openpyxl.utils import get_column_letter
 
 class CheckError(object):
 	'''错误检查'''
-	def __init__(self):
+	def __init__(self, config):
+		self.config = config
 		self.id_ch_list = []
 		self.first_msg_data_list = []
 
@@ -131,6 +132,11 @@ class CheckError(object):
 				col = get_column_letter(signalHeaderList.index("TxSigLen") + 1)
 				hint = "发送信号长度错误，请填写1-64"
 				break
+			if self.config.platInfo == "Qoros_C6M0":
+				if not re.match("^[0-1]{1}$", signalDataList[i][signalHeaderList.index("TxByteOrder")]):
+					col = get_column_letter(signalHeaderList.index("TxByteOrder") + 1)
+					hint = "发送字节序错误，请填写0或1，0表示Motorola大端，1表示Intel小端"
+					break
 
 			if not self.id_is_hex(signalDataList[i][signalHeaderList.index("RxCANID")]):
 				col = get_column_letter(signalHeaderList.index("RxCANID") + 1)
@@ -173,6 +179,8 @@ class CheckError(object):
 				col = get_column_letter(signalHeaderList.index("dfVal") + 1)
 				hint = "接收信号失效值填写错误，请填写标准的十六进制格式"
 				break
+
+
 
 		if hint:
 			ret = (tab, row, col, hint)
@@ -285,8 +293,7 @@ class CheckError(object):
 		# 如果ID和CH已经出现过，则将当前信号与已出现的信号数据进行校验；
 		for ind, subList in enumerate(signalDataList):
 			row = ind +2
-			# 接收信号数据校验
-			
+			# 接收信号数据校验			
 			# 单行数据校验
 			if subList[signalHeaderList.index("ByteOrder")] == '0':
 				if not (int(subList[signalHeaderList.index("RxSigLen")]) <= \
@@ -337,43 +344,81 @@ class CheckError(object):
 					hint = "接收信号节点丢失DTC配置与该行之上同网段同ID信号节点丢失DTC配置不一致"
 					break
 			# 发送信号数据校验
-			# 单行数据校验	
-			if subList[signalHeaderList.index("ByteOrder")] == '0':
-				if not (int(subList[signalHeaderList.index("TxSigLen")]) <= \
-					(int(subList[signalHeaderList.index("TxStartBit")]) // 8) * 8 + (8 - (int(subList[signalHeaderList.index("TxStartBit")]) % 8))):
+			# 单行数据校验,新平台、老平台表一致；观致增加了发送字节序特殊另行elif校验
+			if self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "GAW1.2_NewPlatform":
+				if subList[signalHeaderList.index("ByteOrder")] == '0':
+					if not (int(subList[signalHeaderList.index("TxSigLen")]) <= \
+						(int(subList[signalHeaderList.index("TxStartBit")]) // 8) * 8 + (8 - (int(subList[signalHeaderList.index("TxStartBit")]) % 8))):
+						col = get_column_letter(signalHeaderList.index("TxSigLen") + 1)
+						hint = "发送信号长度超限"
+						break
+				elif subList[signalHeaderList.index("ByteOrder")] == '1':
+					if not ((int(subList[signalHeaderList.index("TxStartBit")]) + int(subList[signalHeaderList.index("TxSigLen")]) - 1) <= 63):
+						col = get_column_letter(signalHeaderList.index("TxSigLen") + 1)
+						hint = "发送信号长度超限"
+						break
+				if not (int(subList[signalHeaderList.index("TxSigLen")]) == int(subList[signalHeaderList.index("RxSigLen")])):
 					col = get_column_letter(signalHeaderList.index("TxSigLen") + 1)
-					hint = "发送信号长度超限"
+					hint = "发送信号长度与接收信号长度不一致"
 					break
-			elif subList[signalHeaderList.index("ByteOrder")] == '1':
-				if not ((int(subList[signalHeaderList.index("TxStartBit")]) + int(subList[signalHeaderList.index("TxSigLen")]) - 1) <= 63):
+
+				tx_id_ch = [subList[signalHeaderList.index("TxCANID")], subList[signalHeaderList.index("TxChannle")]]	
+				if tx_id_ch not in tx_id_ch_list:
+					tx_id_ch_list.append(tx_id_ch)
+					first_txsignal_data_list.append(subList)
+
+				else:
+					# 逐列进行数据校验
+					first_txsignal_data = first_txsignal_data_list[tx_id_ch_list.index(tx_id_ch)]
+					if subList[signalHeaderList.index("TxPeriod")] != first_txsignal_data[signalHeaderList.index("TxPeriod")]:
+						col = get_column_letter(signalHeaderList.index("TxPeriod") + 1)
+						hint = "发送信号周期与该行之上同网段同ID信号周期不一致"
+						break
+					if subList[signalHeaderList.index("TxDLC")] != first_txsignal_data[signalHeaderList.index("TxDLC")]:
+						col = get_column_letter(signalHeaderList.index("TxDLC") + 1)
+						hint = "发送信号DLC与该行之上同网段同ID信号DLC不一致"
+						break
+					if subList[signalHeaderList.index("ByteOrder")] != first_txsignal_data[signalHeaderList.index("ByteOrder")]:
+						col = get_column_letter(signalHeaderList.index("ByteOrder") + 1)
+						hint = "发送信号字节序与该行之上同网段同ID信号字节序不一致"
+						break
+			elif self.config.platInfo == "Qoros_C6M0":
+				if subList[signalHeaderList.index("TxByteOrder")] == '0':
+					if not (int(subList[signalHeaderList.index("TxSigLen")]) <= \
+						(int(subList[signalHeaderList.index("TxStartBit")]) // 8) * 8 + (8 - (int(subList[signalHeaderList.index("TxStartBit")]) % 8))):
+						col = get_column_letter(signalHeaderList.index("TxSigLen") + 1)
+						hint = "发送信号长度超限"
+						break
+				elif subList[signalHeaderList.index("TxByteOrder")] == '1':
+					if not ((int(subList[signalHeaderList.index("TxStartBit")]) + int(subList[signalHeaderList.index("TxSigLen")]) - 1) <= 63):
+						col = get_column_letter(signalHeaderList.index("TxSigLen") + 1)
+						hint = "发送信号长度超限"
+						break
+				if not (int(subList[signalHeaderList.index("TxSigLen")]) == int(subList[signalHeaderList.index("RxSigLen")])):
 					col = get_column_letter(signalHeaderList.index("TxSigLen") + 1)
-					hint = "发送信号长度超限"
+					hint = "发送信号长度与接收信号长度不一致"
 					break
-			if not (int(subList[signalHeaderList.index("TxSigLen")]) == int(subList[signalHeaderList.index("RxSigLen")])):
-				col = get_column_letter(signalHeaderList.index("TxSigLen") + 1)
-				hint = "发送信号长度与接收信号长度不一致"
-				break
 
-			tx_id_ch = [subList[signalHeaderList.index("TxCANID")], subList[signalHeaderList.index("TxChannle")]]	
-			if tx_id_ch not in tx_id_ch_list:
-				tx_id_ch_list.append(tx_id_ch)
-				first_txsignal_data_list.append(subList)
+				tx_id_ch = [subList[signalHeaderList.index("TxCANID")], subList[signalHeaderList.index("TxChannle")]]	
+				if tx_id_ch not in tx_id_ch_list:
+					tx_id_ch_list.append(tx_id_ch)
+					first_txsignal_data_list.append(subList)
 
-			else:
-				# 逐列进行数据校验
-				first_txsignal_data = first_txsignal_data_list[tx_id_ch_list.index(tx_id_ch)]
-				if subList[signalHeaderList.index("TxPeriod")] != first_txsignal_data[signalHeaderList.index("TxPeriod")]:
-					col = get_column_letter(signalHeaderList.index("TxPeriod") + 1)
-					hint = "发送信号周期与该行之上同网段同ID信号周期不一致"
-					break
-				if subList[signalHeaderList.index("TxDLC")] != first_txsignal_data[signalHeaderList.index("TxDLC")]:
-					col = get_column_letter(signalHeaderList.index("TxDLC") + 1)
-					hint = "发送信号DLC与该行之上同网段同ID信号DLC不一致"
-					break
-				if subList[signalHeaderList.index("ByteOrder")] != first_txsignal_data[signalHeaderList.index("ByteOrder")]:
-					col = get_column_letter(signalHeaderList.index("ByteOrder") + 1)
-					hint = "发送信号字节序与该行之上同网段同ID信号字节序不一致"
-					break
+				else:
+					# 逐列进行数据校验
+					first_txsignal_data = first_txsignal_data_list[tx_id_ch_list.index(tx_id_ch)]
+					if subList[signalHeaderList.index("TxPeriod")] != first_txsignal_data[signalHeaderList.index("TxPeriod")]:
+						col = get_column_letter(signalHeaderList.index("TxPeriod") + 1)
+						hint = "发送信号周期与该行之上同网段同ID信号周期不一致"
+						break
+					if subList[signalHeaderList.index("TxDLC")] != first_txsignal_data[signalHeaderList.index("TxDLC")]:
+						col = get_column_letter(signalHeaderList.index("TxDLC") + 1)
+						hint = "发送信号DLC与该行之上同网段同ID信号DLC不一致"
+						break
+					if subList[signalHeaderList.index("TxByteOrder")] != first_txsignal_data[signalHeaderList.index("TxByteOrder")]:
+						col = get_column_letter(signalHeaderList.index("TxByteOrder") + 1)
+						hint = "发送信号字节序与该行之上同网段同ID信号字节序不一致"
+						break
 
 		if hint:
 			ret = (tab, row, col, hint)

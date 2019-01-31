@@ -173,7 +173,7 @@ class MyWindow(MainWindow, RegWindow):
 	def select_apply_platform(self, *args):
 		'''选择适用对象'''
 		self.paltform = self.apply_platform.get()
-		print(self.paltform)
+		# print(self.paltform)
 
 	def run(self):
 		'''主界面运行按钮回调函数'''
@@ -239,7 +239,13 @@ class MyWindow(MainWindow, RegWindow):
 	def box(self):
 		'''主界面百宝箱按钮回调函数'''
 		if not hasattr(self, "tool_if"):
-			self.tool_if = tool_interface.BoxWindow(self, self.config.user_type)
+			if self.config.user_type == "Developer":
+					if self.paltform != "选择平台":
+						self.config.platInfo = self.paltform
+					else:
+						messagebox.showinfo(title='提示', message='请选择应用平台')
+						return
+			self.tool_if = tool_interface.BoxWindow(self, self.config)
 			self.tool_if.boxwin_setup()
 			self.tool_if.box_window.protocol("WM_DELETE_WINDOW", self.tool_if.close_win_callback)
 		else:
