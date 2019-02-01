@@ -63,19 +63,33 @@ class BoxWindow(object):
 													fg="black", activeforeground="black", font=("楷体", 9), width=20, height=2, command=self.diag_res_table_callback)
 			self.hex_select_buntton.place(x=300, y=200)
 
-		# 帮助
-		self.helpimg = PhotoImage(file='image/help.png')
-		self.help_button = Button(self.box_window,image=self.helpimg, command=self.help_callback)
-		# self.help_button = Button(self.box_window, text="帮助", bg="lightgreen", activebackground="gold", \
-		# 					fg="black", activeforeground="black", font=("楷体", 9), width=12, height=2, command=self.help_callback)
+		# # 帮助
+		# self.helpimg = PhotoImage(file='image/help.png')
+		# self.help_button = Button(self.box_window,image=self.helpimg, command=self.help_callback)
+		# # self.help_button = Button(self.box_window, text="帮助", bg="lightgreen", activebackground="gold", \
+		# # 					fg="black", activeforeground="black", font=("楷体", 9), width=12, height=2, command=self.help_callback)
+		# if self.config.user_type == "Customer":
+		# 	self.help_button.place(x=130, y=140)
+		# elif self.config.user_type == "Developer":
+		# 	self.help_button.place(x=130, y=280)
+		# # 绑定鼠标移入事件
+		# self.help_button.bind("<Enter>", self.enter_help_area)
+		# # 绑定鼠标移出事件
+		# self.help_button.bind("<Leave> ", self.leave_help_area)
+
+		# 运行
+		self.runimg = PhotoImage(file='image/run.png')
+		self.run_button = Button(self.box_window, image=self.runimg, command=self.run)
+		# self.run_button = Button(self.box_window, text="运行", bg="lightgreen", activebackground="gold", \
+		# 					fg="black", activeforeground="black", font=("楷体", 9), width=10, height=2, command=self.run)
 		if self.config.user_type == "Customer":
-			self.help_button.place(x=130, y=140)
+			self.run_button.place(x=130, y=140)
 		elif self.config.user_type == "Developer":
-			self.help_button.place(x=130, y=280)
+			self.run_button.place(x=130, y=280)
 		# 绑定鼠标移入事件
-		self.help_button.bind("<Enter>", self.enter_help_area)
+		self.run_button.bind("<Enter>", self.enter_run_area)
 		# 绑定鼠标移出事件
-		self.help_button.bind("<Leave> ", self.leave_help_area)
+		self.run_button.bind("<Leave> ", self.leave_run_area)
 
 		# 返回
 		self.backimg = PhotoImage(file='image/exit.png')
@@ -202,6 +216,22 @@ class BoxWindow(object):
 		else:
 			messagebox.showinfo(title='提示', message='请选择路由表')
 
+	def run(self):
+		'''运行按钮回调函数'''
+		print("run")
+
+	def enter_run_area(self, *args):
+		'''鼠标悬浮'''
+		self.pre_click_hint_val.set("运行")
+		if self.config.user_type == "Customer":
+			self.pre_click_hint.place(x=130, y=120)
+		elif self.config.user_type == "Developer":
+			self.pre_click_hint.place(x=130, y=260)
+
+	def leave_run_area(self, *args):
+		'''鼠标离开'''
+		self.pre_click_hint.place_forget()
+
 	def help_callback(self):
 		'''帮助'''
 		ret = messagebox.askquestion(title='Help', message='这么简单还需要帮助？！！！')
@@ -222,7 +252,7 @@ class BoxWindow(object):
 
 
 	def back_callback(self):
-		'''帮助'''
+		'''返回'''
 		self.box_window.destroy()
 		del(self.main_window.tool_if)
 

@@ -1,5 +1,5 @@
 from tkinter import Tk, Toplevel, Label, Button, StringVar, Entry, W
-from tkinter import messagebox, ttk, PhotoImage
+from tkinter import messagebox, ttk, PhotoImage, Menu
 from ui import tool_interface
 
 class MainWindow(object):
@@ -14,9 +14,26 @@ class MainWindow(object):
 			self.window.title("PostBuildTool(客户版)  Kanwairen")
 		elif self.config.user_type == "Developer":
 			self.window.title("PostBuildTool(开发版)  Kanwairen")
-		self.window.geometry('580x340')                 #是x 不是*
+		self.window.geometry('580x350')                 #是x 不是*
 		self.window.iconbitmap("image/icon.ico")
 		self.window.resizable(width=False, height=False) #宽不可变, 高可变, 默认为True
+
+		self.menubar = Menu(self.window)
+		self.filemenu = Menu(self.menubar,tearoff=0)
+		self.menubar.add_cascade(label='File',menu=self.filemenu)
+
+		# self.filemenu.add_command(label='New',command=self.window.quit)
+		# self.filemenu.add_command(label='Open',command=self.window.quit)
+		# self.filemenu.add_command(label='Save',command=self.window.quit)
+		# self.filemenu.add_separator()
+		self.filemenu.add_command(label='Exit',command=self.exit)
+
+		self.helpmenu=Menu(self.menubar,tearoff=0)
+		self.menubar.add_cascade(label='Help',menu=self.helpmenu)
+		self.helpmenu.add_command(label='Register',command=self.register)
+		self.helpmenu.add_command(label='About',command=self.about)
+
+		self.window.config(menu=self.menubar)
 
 		if self.config.user_type == "Developer":
 			# 创建一个适用平台下拉列表
@@ -77,22 +94,22 @@ class MainWindow(object):
 		self.exit_button = Button(self.window,image=self.exitimg, command=self.exit)
 		# self.exit_button = Button(self.window, text="退出", bg="lightgreen", activebackground="gold", \
 		# 					fg="black", activeforeground="black", font=("楷体", 9), width=10, height=2, command=self.exit)
-		self.exit_button.place(x=210, y=260)
+		self.exit_button.place(x=270, y=260)
 		# 绑定鼠标移入事件
 		self.exit_button.bind("<Enter>", self.enter_exit_area)
 		# 绑定鼠标移出事件
 		self.exit_button.bind("<Leave> ", self.leave_exit_area)
 
-		# 帮助
-		self.helpimg = PhotoImage(file='image/help.png')
-		self.help_button = Button(self.window,image=self.helpimg, command=self.help)
-		# self.help_button = Button(self.window, text="帮助", bg="lightgreen", activebackground="gold", \
-		# 					fg="black", activeforeground="black", font=("楷体", 9), width=10, height=2, command=self.help)
-		self.help_button.place(x=330, y=260)
-		# 绑定鼠标移入事件
-		self.help_button.bind("<Enter>", self.enter_help_area)
-		# 绑定鼠标移出事件
-		self.help_button.bind("<Leave> ", self.leave_help_area)
+		# # 帮助
+		# self.helpimg = PhotoImage(file='image/help.png')
+		# self.help_button = Button(self.window,image=self.helpimg, command=self.help)
+		# # self.help_button = Button(self.window, text="帮助", bg="lightgreen", activebackground="gold", \
+		# # 					fg="black", activeforeground="black", font=("楷体", 9), width=10, height=2, command=self.help)
+		# self.help_button.place(x=330, y=260)
+		# # 绑定鼠标移入事件
+		# self.help_button.bind("<Enter>", self.enter_help_area)
+		# # 绑定鼠标移出事件
+		# self.help_button.bind("<Leave> ", self.leave_help_area)
 		
 		# 百宝箱
 		self.toolimg = PhotoImage(file='image/tool.png')
@@ -122,6 +139,7 @@ class RegWindow(object):
 		self.reg_window = Toplevel()
 		self.reg_window.title('注册')
 		self.reg_window.geometry('450x200')
+		self.reg_window.iconbitmap("image/regicon.ico")
 		self.reg_window.resizable(width=False, height=False) #宽不可变, 高可变, 默认为True
 
 		# 注册码输入
@@ -215,7 +233,7 @@ class MyWindow(MainWindow, RegWindow):
 	def enter_exit_area(self, *args):
 		'''鼠标悬浮'''
 		self.pre_click_hint_val.set("退出")
-		self.pre_click_hint.place(x=210, y=240)
+		self.pre_click_hint.place(x=270, y=240)
 
 	def leave_exit_area(self, *args):
 		'''鼠标离开'''
@@ -334,6 +352,20 @@ class MyWindow(MainWindow, RegWindow):
 		self.reg_window.destroy()
 		del(self.reg_window)
 
+	def register(self):
+		'''注册函数'''
+		try:
+			if hasattr(self, "reg_window"):
+				messagebox.showinfo(title='提示', message='注册窗口已打开，请勿重复操作！')
+			else:
+				self.regwin_setup()
+				self.reg_window.protocol("WM_DELETE_WINDOW", self.close_win_callback)
+		except AttributeError:
+			pass	
+
+	def about(self):
+		'''关于'''
+		messagebox.showinfo(title='About PostBuild', message='     Version 1.0\n\nDeveloped by Kanwairen')
 
 if __name__ == '__main__':
 	pass
