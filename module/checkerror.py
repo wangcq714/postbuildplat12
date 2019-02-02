@@ -37,7 +37,7 @@ class CheckError(object):
 			row = i + 2
 			if not self.id_is_hex(msgDataList[i][msgHeaderList.index("TxCANID")]):
 				col = get_column_letter(msgHeaderList.index("TxCANID") + 1)
-				hint = "发送报文ID格式错误或超出范围，请填写标准的十六进制格式(0x000-0xFFF)"
+				hint = "发送报文ID格式错误或超出范围，请填写标准的十六进制格式(0x000-0x7FF)"
 				break
 			if not re.match("^([1-9]{1}[0-9]+)|None$", msgDataList[i][msgHeaderList.index("TxPeriod")]):
 				col = get_column_letter(msgHeaderList.index("TxPeriod") + 1)
@@ -54,7 +54,7 @@ class CheckError(object):
 
 			if not self.id_is_hex(msgDataList[i][msgHeaderList.index("RxCANID")]):
 				col = get_column_letter(msgHeaderList.index("RxCANID") + 1)
-				hint = "接收报文ID格式错误，请填写标准的十六进制格式(0x000-0xFFF)"
+				hint = "接收报文ID格式错误，请填写标准的十六进制格式(0x000-0x7FF)"
 				break
 			if not re.match("^([1-9]{1}[0-9]+)|None$", msgDataList[i][msgHeaderList.index("RxPeriod")]):
 				col = get_column_letter(msgHeaderList.index("RxPeriod") + 1)
@@ -110,7 +110,7 @@ class CheckError(object):
 			row = i + 2
 			if not self.id_is_hex(signalDataList[i][signalHeaderList.index("TxCANID")]):
 				col = get_column_letter(signalHeaderList.index("TxCANID") + 1)
-				hint = "发送信号ID格式错误，请填写标准的十六进制格式(0x000-0xFFF)"
+				hint = "发送信号ID格式错误，请填写标准的十六进制格式(0x000-0x7FF)"
 				break
 			if not re.match("^[1-9]{1}[0-9]+$", signalDataList[i][signalHeaderList.index("TxPeriod")]):
 				col = get_column_letter(signalHeaderList.index("TxPeriod") + 1)
@@ -140,7 +140,7 @@ class CheckError(object):
 
 			if not self.id_is_hex(signalDataList[i][signalHeaderList.index("RxCANID")]):
 				col = get_column_letter(signalHeaderList.index("RxCANID") + 1)
-				hint = "接收信号ID格式错误，请填写标准的十六进制格式(0x000-0xFFF)"
+				hint = "接收信号ID格式错误，请填写标准的十六进制格式(0x000-0x7FF)"
 				break
 			if not re.match("^[1-9]{1}[0-9]+$", signalDataList[i][signalHeaderList.index("RxPeriod")]):
 				col = get_column_letter(signalHeaderList.index("RxPeriod") + 1)

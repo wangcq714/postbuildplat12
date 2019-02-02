@@ -310,9 +310,9 @@ class MyWindow(MainWindow, RegWindow):
 				self.hex_pathname_display["text"] = self.readHex.pathName
 				self.hex_pathname_display["anchor"] = W
 			else:
-				if self.user_type == "Customer":
+				if self.config.user_type == "Customer":
 					self.hex_pathname_display["text"] = "请选择源hex文件"
-				elif self.user_type == "Developer":
+				elif self.config.user_type == "Developer":
 					self.hex_pathname_display["text"] = "如不操作hex可不选"
 				self.hex_pathname_display["anchor"] = "center"
 		else:
