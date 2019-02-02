@@ -407,7 +407,7 @@ class SignalCheckError(object):
 			
 			if not re.match("^([0-9 A-Z]{6})|None$", str(dataList[i][headerList.index("DTC")])):
 				col = get_column_letter(headerList.index("DTC") + 1)
-				hint = "源报文是否作为节点丢失DTC判断条件填写错误，请填写Y或N(大写)，Y代表是节点丢失报文，N代表不是节点丢失报文"
+				hint = "源报文是否作为节点丢失DTC判断条件填写错误，请填写6位标准DTC码格式或填NA或不填"
 				break
 			
 
