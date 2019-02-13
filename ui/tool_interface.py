@@ -303,7 +303,7 @@ class BoxWindow(object):
 							messagebox.showinfo(title='提示', message='诊断请求表生成成功')
 						except:
 							messagebox.showinfo(title='提示', message='转换出错，请检查表格信息')
-					elif self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "Qoros_C6M0":
+					elif self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "Qoros_C6M0" or self.config.platInfo == "CHJ":
 						diag_msg = diagmsgcfg.DiagResTable()
 						diag_msg.pathname = self.public_for_all.pathname
 						try:
@@ -315,7 +315,7 @@ class BoxWindow(object):
 				elif val == 6:
 					if self.config.platInfo == "GAW1.2_NewPlatform":
 						messagebox.showinfo(title='提示', message='新平台诊断响应报文不需要配置')
-					elif self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "Qoros_C6M0":	
+					elif self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "Qoros_C6M0" or self.config.platInfo == "CHJ":	
 						diag_msg = diagmsgcfg.DiagResTable()
 						diag_msg.pathname = self.public_for_all.pathname
 						try:

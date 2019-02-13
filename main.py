@@ -15,8 +15,9 @@ def run(config, msgRoute, signalRoute, readHex):
 	# config.read_data()
 	msgRoute.read_data("O")
 
-	if config.platInfo == "GAW1.2_OldPlatform" or config.platInfo == "GAW1.2_NewPlatform":
+	if config.platInfo == "GAW1.2_OldPlatform" or config.platInfo == "GAW1.2_NewPlatform" or config.platInfo == "CHJ":
 		signalRoute.read_data("T")
+		# print(signalRoute.dataList)
 	elif config.platInfo == "Qoros_C6M0":
 		signalRoute.read_data("U")
 
@@ -110,10 +111,13 @@ def run(config, msgRoute, signalRoute, readHex):
 	pbMsgSendTable.modify_hex_data(readHex.hexData, pbMsgSendTable.tableAddr, pbMsgSendTable.structLen*pbMsgSendTable.tableLen, pbMsgSendTable.hexDataList)
 
 	# 目标信号对应源信号ID索引
-	pbMsgSrcTable = buildtable.PbMsgSrcTable()
+	pbMsgSrcTable = buildtable.PbMsgSrcTable(config)
 	pbMsgSrcTable.get_valid_data(signalRoute)
 	pbMsgSrcTable.data_handle()
 	pbMsgSrcTable.build_table()
+	if config.platInfo == "CHJ":
+		pbMsgSrcTable.build_hex_data(pbMsgSrcTable.PbMsgSrcTableList)
+		pbMsgSrcTable.modify_hex_data(readHex.hexData, pbMsgSrcTable.tableAddr, pbMsgSrcTable.structLen*pbMsgSrcTable.tableLen, pbMsgSrcTable.hexDataList)
 
 	# 信号报文发送调度表
 	pbMsgSendSchedule = buildtable.PbMsgSendSchedule(config)
@@ -164,7 +168,7 @@ def run(config, msgRoute, signalRoute, readHex):
 	# 只有当用户模式为开发者模式时才会生成配置表文件；客户模式下只可操作加密hex.
 	if config.user_type == "Developer":
 		# 写入Table.c文件
-		if config.platInfo == "GAW1.2_OldPlatform" or config.platInfo == "Qoros_C6M0":
+		if config.platInfo == "GAW1.2_OldPlatform" or config.platInfo == "Qoros_C6M0" or config.platInfo == "CHJ":
 			writeData.write_table_c(canFullIdNameISR.CAN_FULL_ID_NAME_ISR)
 			writeData.write_table_c(pbDirectRoutingTable.PB_DirectRoutingTable)
 			writeData.write_table_c(pbMsgRoutingTable.PB_MsgRoutingTable)

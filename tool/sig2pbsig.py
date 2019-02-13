@@ -18,7 +18,7 @@ class SignalTableConvert(object):
 		self.config = config
 		self.Can2num = {"CAN1":1, "CAN2":2, "CAN3":3, "CAN4":4, "CAN5":5, "CAN6":6}
 		#目标Excel表头
-		if self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "GAW1.2_NewPlatform":
+		if self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "GAW1.2_NewPlatform" or self.config.platInfo == "CHJ":
 			self.TableHeader = ["SignalName", "TxMeesageName", "TxCANID", "TxPeriod", "TxDLC", "TxChannle", \
 							"TxStartBit", "TxSigLen", "RxMeesageName", "RxCANID", "RxPeriod", "RxDLC", \
 							"RxChannel", "RxStartBit", "RxSigLen", "ByteOrder", "RxDTC", "inival", "dfVal", "desName"]
@@ -136,7 +136,7 @@ class SignalTableConvert(object):
 	#创建目标表列表
 	def build_des_table(self) -> None:
 		print(self.config.platInfo, "sig")
-		if self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "GAW1.2_NewPlatform":
+		if self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "GAW1.2_NewPlatform" or self.config.platInfo == "CHJ":
 			self.des_table.append(self.src_table["信号名称"])
 			self.des_table.append(self.get_TxMeesageName())
 			self.des_table.append(self.src_table["des_目标网段ID"])

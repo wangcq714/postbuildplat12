@@ -113,7 +113,7 @@ class Config(object):
 			if data.find(':') != -1:
 				tmpList = data[data.find(':')+1:].split(',')
 				self.platforms = tmpList
-				self.platInfo = tmpList[0]  # 配置平台信息，主要应用于客户版；0：GAW1.2_NewPlatform 1：GAW1.2_OldPlatform 2：Qoros_C6M0
+				self.platInfo = tmpList[0]  # 配置平台信息，主要应用于客户版；0：GAW1.2_NewPlatform 1：GAW1.2_OldPlatform 2：Qoros_C6M0 3:CHJ 4:MAXUS
 		# 获取用户信息
 		for data in dataList[dataList.index("[User]") + 1:dataList.index("[End]")]:
 			if data.find(':') != -1:
