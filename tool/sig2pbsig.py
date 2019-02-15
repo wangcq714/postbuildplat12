@@ -18,7 +18,7 @@ class SignalTableConvert(object):
 		self.config = config
 		self.Can2num = {"CAN1":1, "CAN2":2, "CAN3":3, "CAN4":4, "CAN5":5, "CAN6":6}
 		#目标Excel表头
-		if self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "GAW1.2_NewPlatform" or self.config.platInfo == "CHJ":
+		if self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "GAW1.2_NewPlatform" or self.config.platInfo == "CHJ" or self.config.platInfo == "MAXUS":
 			self.TableHeader = ["SignalName", "TxMeesageName", "TxCANID", "TxPeriod", "TxDLC", "TxChannle", \
 							"TxStartBit", "TxSigLen", "RxMeesageName", "RxCANID", "RxPeriod", "RxDLC", \
 							"RxChannel", "RxStartBit", "RxSigLen", "ByteOrder", "RxDTC", "inival", "dfVal", "desName"]
@@ -115,13 +115,13 @@ class SignalTableConvert(object):
 				#print(sheet[get_column_letter(i) + str(j)].value)
 				if SignalDatas[i][j]:
 					if i < 2:
-						self.src_table[str(SignalDatas[i][j])] = SignalDatas[i][2:]
+						self.src_table[str(SignalDatas[i][j])] = [data for data in SignalDatas[i][2:] if data != "None"]
 					elif i < column_index_from_string('L'):
-						self.src_table["src_" + str(SignalDatas[i][j])] = SignalDatas[i][2:]
+						self.src_table["src_" + str(SignalDatas[i][j])] = [data for data in SignalDatas[i][2:] if data != "None"]
 					elif i < column_index_from_string('T'):
-						self.src_table["des_" + str(SignalDatas[i][j])]  = SignalDatas[i][2:]
+						self.src_table["des_" + str(SignalDatas[i][j])]  = [data for data in SignalDatas[i][2:] if data != "None"]
 					else:
-						self.src_table[str(SignalDatas[i][j])] = SignalDatas[i][2:]
+						self.src_table[str(SignalDatas[i][j])] = SignalDatas[i][2:2+len([data for data in SignalDatas[0][2:] if data != "None"])]
 
 	#获取DTC标志
 	def get_DTC(self) -> list:
@@ -136,7 +136,7 @@ class SignalTableConvert(object):
 	#创建目标表列表
 	def build_des_table(self) -> None:
 		print(self.config.platInfo, "sig")
-		if self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "GAW1.2_NewPlatform" or self.config.platInfo == "CHJ":
+		if self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "GAW1.2_NewPlatform" or self.config.platInfo == "CHJ" or self.config.platInfo == "MAXUS":
 			self.des_table.append(self.src_table["信号名称"])
 			self.des_table.append(self.get_TxMeesageName())
 			self.des_table.append(self.src_table["des_目标网段ID"])
@@ -243,19 +243,20 @@ class SignalTableConvert(object):
 			SignalDatas = list(map(list, zip(*SignalDatas)))
 			# 将列表中的所有int转为str
 			SignalDatas = self.SignalDatas_handling(SignalDatas)
+			# SignalDatas = [[data for data in SignalData if data != "None"] for SignalData in SignalDatas]
 
 			# print(SignalDatas)
 
 			self.build_rows_all(SignalDatas)
 
-			# print(self.src_table)
+			print(self.src_table)
 
 			# 读取指定列数据
 			dataFrame = read_excel(self.pathname, sheet_name="Sheet2", header=None, na_values="", usecols="V:X")
 			# print(dataFrame)
 			# 获取通道映射
 			self.ChannalMapping = self.getChannalMapping_pandas(dataFrame, 0)
-			# print(g_var.self.ChannalMapping)
+			print(self.ChannalMapping)
 			
 			# #创建目标表列表
 			self.build_des_table()

@@ -87,7 +87,7 @@ class MsgNodeEnable(object):
 		PB_MsgNodeTable_str = "const PB_TABLE_1_Auxiliary PB_MsgNodeTable_ISR[TABLE_1_SIZE] =" + '\n'
 		PB_MsgNodeTable_str += '{' + '\n'
 		for ListValue in sourcelist:
-			if ListValue[column_index_from_string('P') - 1] != "NA":
+			if ListValue[column_index_from_string('P') - 1] != "NA" and ListValue[column_index_from_string('P') - 1] != "None":
 				PB_MsgNodeTable_str += '\t' + "NODE_" + ListValue[column_index_from_string('P') - 1] + ',' + '\n'
 			else:
 				PB_MsgNodeTable_str += '\t' + str(255) + ',' + '\n'

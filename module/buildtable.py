@@ -283,12 +283,19 @@ class RoutingTable(object):
 				self.msgValidHeaderList.pop(self.msgValidHeaderList.index("LineNumber"))
 				MsgDesCh = subList.pop(self.msgValidHeaderList.index("TxChannle"))
 				self.msgValidHeaderList.pop(self.msgValidHeaderList.index("TxChannle"))
+				# 大通项目变ID需要弹出以保持同通道同ID数据只采集一份
+				if self.config.platInfo == "MAXUS":
+					ChangeID = subList.pop(self.msgValidHeaderList.index("ChangeID"))
+					self.msgValidHeaderList.pop(self.msgValidHeaderList.index("ChangeID"))
 
 				if subList not in self.msgValidDataList:
 					self.msgValidDataList.append(subList)
 					self.msgDesChList.append([subList[self.msgValidHeaderList.index("TxCANID")]])
 					if MsgDesCh != '0':
-						self.msgDesChList[len(self.msgValidDataList) - 1].append(MsgDesCh)
+						if self.config.platInfo == "MAXUS":
+							self.msgDesChList[len(self.msgValidDataList) - 1].append([MsgDesCh, ChangeID])
+						else:
+							self.msgDesChList[len(self.msgValidDataList) - 1].append(MsgDesCh)
 					if subList[self.msgValidHeaderList.index("RxInterrupt")] == "0":
 						pass
 						# self.msgDesChList[len(self.msgValidDataList) - 1].append(MsgDesCh)
@@ -300,7 +307,10 @@ class RoutingTable(object):
 
 				else:
 					if MsgDesCh != '0':
-						self.msgDesChList[self.msgValidDataList.index(subList)].append(MsgDesCh)
+						if self.config.platInfo == "MAXUS":
+							self.msgDesChList[self.msgValidDataList.index(subList)].append([MsgDesCh, ChangeID])
+						else:
+							self.msgDesChList[self.msgValidDataList.index(subList)].append(MsgDesCh)
 					if subList[self.msgValidHeaderList.index("RxInterrupt")] == "0":
 						pass
 						# self.msgDesChList[self.msgValidDataList.index(subList)].append(MsgDesCh)
@@ -407,6 +417,58 @@ class RoutingTable(object):
 			retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RxInterrupt")]) # RxInterrupt
 			retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RxDTC")]) # RxDTC
 			retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RxChannel")]) # RxCh
+		elif self.config.platInfo == "MAXUS":
+			retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("TxCANID")]) # ID
+			retList.append(str(len(self.msgDesChList[index]) - 1) + 'u') # dest_mo_num
+			if self.msgValidDataList[index][self.msgValidHeaderList.index("MsgNode")] != "0xFF":
+				retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("MsgNode")] + 'u') # src_ecu_node
+			else:
+				retList.append("255u")
+			retList.append("255u") # valid_flg_index(DTC)
+			# retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("TxDLC")] + 'u') # DLC
+			if self.msgValidDataList[index][self.msgValidHeaderList.index("RxInterrupt")] == '0': # dest_mo
+				# for ch in sorted(self.msgDesChList[index][1:]):
+				for ch, changeid in sorted(self.msgDesChList[index][1:], key=lambda subList: subList[0]):
+					retList.append(ch + 'u')
+					retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RouteCondiction")] + 'u')
+					if str(changeid) != '0':
+						retList.append('1u')
+						retList.append(changeid + 'u')
+					else:
+						retList.append('0u')
+						retList.append('0x000u')
+				for i in range(5 - len(self.msgDesChList[index]) + 1):
+					retList.append('0u')
+					retList.append('0u')
+					retList.append('0u')
+					retList.append('0x000u')
+			else:
+				# for ch in sorted(self.msgDesChList[index][1:]):
+				for ch, changeid in sorted(self.msgDesChList[index][1:], key=lambda subList: subList[0]):
+					retList.append('0u')
+					retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RouteCondiction")] + 'u')
+					if str(changeid) != '0':
+						retList.append('1u')
+						retList.append(changeid + 'u')
+					else:
+						retList.append('0u')
+						retList.append('0x000u')
+				for i in range(5 - len(self.msgDesChList[index]) + 1):
+					retList.append('0u')
+					retList.append('0u')
+					retList.append('0u')
+					retList.append('0x000u')
+			# if(self.msgValidDataList[index][self.msgValidHeaderList.index("TxPeriod")] != "None"):	
+			# 	retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("TxPeriod")] + 'u') # cycle
+			# else:
+			# 	retList.append('0u')
+			retList.append('0u') # msg_index
+			retList.append('0x0000u') # buf_index
+			# retList.append('0u') # pre_callback
+			# retList.append('0u') # post_callback
+			retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RxInterrupt")]) # RxInterrupt
+			retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RxDTC")]) # RxDTC
+			retList.append(self.msgValidDataList[index][self.msgValidHeaderList.index("RxChannel")]) # RxCh
 
 
 		# print(retList)
@@ -449,6 +511,25 @@ class RoutingTable(object):
 			retList.append('0') # RxInterrupt
 			retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxDTC")]) # RxDTC
 			retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxChannel")]) # RxCh
+		elif self.config.platInfo == "MAXUS":
+			retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxCANID")]) # ID
+			retList.append("0u") # dest_mo_num
+			retList.append("255u") # src_ecu_node
+			retList.append("255u") # valid_flg_index(DTC)
+			# retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxDLC")] + 'u') # DLC
+			for i in range(5): # dest_mo
+				retList.append('0u')
+				retList.append('0u')
+				retList.append('0u')
+				retList.append('0x000u')
+			# retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxPeriod")] + 'u') # cycle
+			retList.append('0u') # msg_index
+			retList.append('0x0000u') # buf_index
+			# retList.append("0u") # pre_callback
+			# retList.append("0u") # post_callback
+			retList.append('0') # RxInterrupt
+			retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxDTC")]) # RxDTC
+			retList.append(self.signalValidDataList[index][self.sigValidHeaderList.index("RxChannel")]) # RxCh
 
 		# print(retList)
 		return retList
@@ -473,6 +554,7 @@ class RoutingTable(object):
 		# print(self.routerTableList)
 		# print(len(self.routerTableList))
 
+		# print(self.routerTableList[0][self.routerTableListHeader.index("RxChannel")])
 		# 将所有报文按ID大小排序, 在ID排序基础上以接收通道排序；所有表中都这样处理。
 		self.routerTableList = sorted(self.routerTableList, key=lambda subList: [int(subList[self.routerTableListHeader.index("RxCANID")], 16), int(subList[self.routerTableListHeader.index("RxChannel")])])
 		# print(self.routerTableList)
@@ -508,7 +590,10 @@ class RoutingTable(object):
 		MO_ISR_num = len(self.routerTableISRList)
 		for i in range(len(self.routerTableISRList)):
 			for j in range(len(self.msgDesChListISR[i][1:])):
-				self.routerTableISRList[i][self.routerTableListHeader.index("dest_mo_index1") + j*2] = str(MO_ISR_num) + 'u'
+				if self.config.platInfo == "MAXUS":
+					self.routerTableISRList[i][self.routerTableListHeader.index("dest_mo_index1") + j*4] = str(MO_ISR_num) + 'u'
+				else:
+					self.routerTableISRList[i][self.routerTableListHeader.index("dest_mo_index1") + j*2] = str(MO_ISR_num) + 'u'
 				MO_ISR_num += 1
 		# print(self.routerTableISRList)
 
@@ -539,6 +624,11 @@ class PbDirectRoutingTable(RoutingTable, HexBase):
 									  "dest_mo_index2", "dest_mo_condition2", "dest_mo_index3", "dest_mo_condition3", "dest_mo_index4", "dest_mo_condition4",\
 									  "dest_mo_index5", "dest_mo_condition5", "msg_index", "buf_index",\
 									  "RxInterrupt", "RxDTC", "RxChannel"]
+		elif self.config.platInfo == "MAXUS":
+			self.routerTableListHeader = ["RxCANID", "dest_mo_num", "src_ecu_node",  "valid_flg_index", "dest_mo_index1", "dest_mo_condition1", "dest_mo_ChangeIDFlg1", "dest_mo_ChangeID1",\
+									  "dest_mo_index2", "dest_mo_condition2", "dest_mo_ChangeIDFlg2", "dest_mo_ChangeID2", "dest_mo_index3", "dest_mo_condition3", "dest_mo_ChangeIDFlg3", "dest_mo_ChangeID3", "dest_mo_index4", "dest_mo_condition4", "dest_mo_ChangeIDFlg4", "dest_mo_ChangeID4",\
+									  "dest_mo_index5", "dest_mo_condition5", "dest_mo_ChangeIDFlg5", "dest_mo_ChangeID5", "msg_index", "buf_index",\
+									  "RxInterrupt", "RxDTC", "RxChannel"]
 										  
 		self.routerTableISRList = []
 		self.routerTableFIFOList = []
@@ -549,6 +639,10 @@ class PbDirectRoutingTable(RoutingTable, HexBase):
 		elif self.config.platInfo == "GAW1.2_OldPlatform":
 			self.structType = ["uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint16", "uint16"]
 			self.structLen = 16
+		elif self.config.platInfo == "MAXUS":
+			self.structType = ["uint8", "uint8", "uint16", "uint8", "uint8", "uint16", "uint16", "uint8", "uint8", "uint16", "uint16", "uint8", "uint8", "uint16", \
+								"uint16", "uint8", "uint8", "uint16", "uint16", "uint8", "uint8", "uint16", "uint16", "uint16", "uint16"]
+			self.structLen = 38
 		# self.tableLenAddr = "0x00c08001"
 		# self.lenType = "uint8"
 		self.tableLenAddr = self.config.addrInfo["PB_DirectRoutingTable"]["tableLenAddr"]
@@ -602,6 +696,11 @@ class PbMsgRoutingTable(RoutingTable, HexBase):
 									  "dest_mo_index2", "dest_mo_condition2", "dest_mo_index3", "dest_mo_condition3", "dest_mo_index4", "dest_mo_condition4",\
 									  "dest_mo_index5", "dest_mo_condition5", "msg_index", "buf_index",\
 									  "RxInterrupt", "RxDTC", "RxChannel"]
+		elif self.config.platInfo == "MAXUS":
+			self.routerTableListHeader = ["RxCANID", "dest_mo_num", "src_ecu_node",  "valid_flg_index", "dest_mo_index1", "dest_mo_condition1", "dest_mo_ChangeIDFlg1", "dest_mo_ChangeID1",\
+									  "dest_mo_index2", "dest_mo_condition2", "dest_mo_ChangeIDFlg2", "dest_mo_ChangeID2", "dest_mo_index3", "dest_mo_condition3", "dest_mo_ChangeIDFlg3", "dest_mo_ChangeID3", "dest_mo_index4", "dest_mo_condition4", "dest_mo_ChangeIDFlg4", "dest_mo_ChangeID4",\
+									  "dest_mo_index5", "dest_mo_condition5", "dest_mo_ChangeIDFlg5", "dest_mo_ChangeID5", "msg_index", "buf_index",\
+									  "RxInterrupt", "RxDTC", "RxChannel"]
 
 
 		self.routerTableISRList = []
@@ -613,6 +712,10 @@ class PbMsgRoutingTable(RoutingTable, HexBase):
 		elif self.config.platInfo == "GAW1.2_OldPlatform":
 			self.structType = ["uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8", "uint16", "uint16"]
 			self.structLen = 16
+		elif self.config.platInfo == "MAXUS":
+			self.structType = ["uint8", "uint8", "uint16", "uint8", "uint8", "uint16", "uint16", "uint8", "uint8", "uint16", "uint16", "uint8", "uint8", "uint16", \
+								"uint16", "uint8", "uint8", "uint16", "uint16", "uint8", "uint8", "uint16", "uint16", "uint16", "uint16"]
+			self.structLen = 38
 		# self.tableLenAddr = "0x00c0a46d"
 		# self.lenType = "uint8"
 		self.tableLenAddr = self.config.addrInfo["PB_MsgRoutingTable"]["tableLenAddr"]
@@ -754,7 +857,7 @@ class PbSignalRoutingTable(HexBase):
 		self.srcSignalListList = []
 		self.PbSignalRoutingTableList = []
 		self.PB_Signal_Routing_Table = []
-		if self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "GAW1.2_NewPlatform" or self.config.platInfo == "CHJ":	
+		if self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "GAW1.2_NewPlatform" or self.config.platInfo == "CHJ" or self.config.platInfo == "MAXUS":	
 			self.structType = ["uint16", "uint8", "uint8", "uint8", "uint8", "uint8", "uint8"]
 			self.structLen = 8
 		elif self.config.platInfo == "Qoros_C6M0":	
@@ -823,7 +926,7 @@ class PbSignalRoutingTable(HexBase):
 	def __signal_route_handling(self, subList):
 		"""对获取的每一行数据处理，得到信号路由表(PB_Signal_Routing_Table)的一行"""
 		retList = []
-		if self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "GAW1.2_NewPlatform" or self.config.platInfo == "CHJ":
+		if self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "GAW1.2_NewPlatform" or self.config.platInfo == "CHJ" or self.config.platInfo == "MAXUS":
 			retList.append(self.__calculate_source_index(subList) + 'u')
 			retList.append(str(int(subList[self.sigValidHeaderList.index("RxStartBit")])%8) + 'u')
 			retList.append(subList[self.sigValidHeaderList.index("RxSigLen")] + 'u')
@@ -905,7 +1008,7 @@ class PbMsgSendTable(HexBase):
 		if self.config.platInfo == "GAW1.2_NewPlatform" or self.config.platInfo == "Qoros_C6M0":
 			self.structType = ["uint32", "uint16", "uint8", "uint8", "uint8", "uint8", "uint16", "uint8", "uint8"] 
 			self.structLen = 14
-		elif self.config.platInfo == "GAW1.2_OldPlatform":
+		elif self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "MAXUS":
 			self.structType = ["uint32", "uint16", "uint8", "uint8", "uint8", "uint8", "uint16"]
 			self.structLen = 12
 		elif self.config.platInfo == "CHJ":
@@ -1012,7 +1115,7 @@ class PbMsgSendTable(HexBase):
 			retList.append(self.__calculate_first_source_index(index) + 'u')
 			retList.append('0u')
 			retList.append('0u')
-		elif self.config.platInfo == "GAW1.2_OldPlatform":
+		elif self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "MAXUS":
 			retList.append(self.validDataList[index][self.sigValidHeaderList.index("TxCANID")] + 'u')
 			retList.append(self.validDataList[index][self.sigValidHeaderList.index("TxPeriod")] + 'u')
 			retList.append(self.validDataList[index][self.sigValidHeaderList.index("TxChannle")] + 'u')
@@ -1486,6 +1589,11 @@ class Id2IndexTable(RoutingTable, HexBase):
 			self.routerTableListHeader = ["RxCANID", "dest_mo_num", "valid_flg_index", "dest_mo_index1", "dest_mo_condition1",\
 									  "dest_mo_index2", "dest_mo_condition2", "dest_mo_index3", "dest_mo_condition3", "dest_mo_index4", "dest_mo_condition4",\
 									  "dest_mo_index5", "dest_mo_condition5", "msg_index", "buf_index",\
+									  "RxInterrupt", "RxDTC", "RxChannel"]
+		elif self.config.platInfo == "MAXUS":
+			self.routerTableListHeader = ["RxCANID", "dest_mo_num", "src_ecu_node",  "valid_flg_index", "dest_mo_index1", "dest_mo_condition1", "dest_mo_ChangeIDFlg1", "dest_mo_ChangeID1",\
+									  "dest_mo_index2", "dest_mo_condition2", "dest_mo_ChangeIDFlg2", "dest_mo_ChangeID2", "dest_mo_index3", "dest_mo_condition3", "dest_mo_ChangeIDFlg3", "dest_mo_ChangeID3", "dest_mo_index4", "dest_mo_condition4", "dest_mo_ChangeIDFlg4", "dest_mo_ChangeID4",\
+									  "dest_mo_index5", "dest_mo_condition5", "dest_mo_ChangeIDFlg5", "dest_mo_ChangeID5", "msg_index", "buf_index",\
 									  "RxInterrupt", "RxDTC", "RxChannel"]
 
 

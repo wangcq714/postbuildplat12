@@ -3,6 +3,7 @@
 
 # import sys
 import os
+import re
 
 # from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter, column_index_from_string
@@ -17,15 +18,20 @@ from pandas import read_excel
 
 class MsgTableConvert(object):
 	'''报文表转换'''
-	def __init__(self):
+	def __init__(self, config):
+		self.config = config
 		self.pathname = ""
 		self.src_row_data_all = []   #存取源表的所有行数据列表
 		self.des_column_data_all = []   #存取目标表的所有行数据列表
 		# self.diag_des_column_data_all = []   #存取目标表的所有行数据列表
 		self.ChannalMapping = {}        #CAN通道与系统框图通道映射
 		self.Can2num = {"CAN1":1, "CAN2":2, "CAN3":3, "CAN4":4, "CAN5":5, "CAN6":6}  #CAN通道与数字映射
-		self.TableHeader = ["LineNumber", "TxMessageName", "TxCANID", "TxPeriod", "TxDLC", "TxChannle", "RxMessageName", \
-						"RxCANID", "RxPeriod", "RxDLC", "RxChannel", "RxMsk", "RxInterrupt", "RxDTC", "RouteCondiction"]
+		if self.config.platInfo == "MAXUS":
+			self.TableHeader = ["LineNumber", "TxMessageName", "TxCANID", "TxPeriod", "TxDLC", "TxChannle", "RxMessageName", \
+								"RxCANID", "RxPeriod", "RxDLC", "RxChannel", "RxMsk", "RxInterrupt", "RxDTC", "RouteCondiction","MsgNode","ChangeID"]
+		else:
+			self.TableHeader = ["LineNumber", "TxMessageName", "TxCANID", "TxPeriod", "TxDLC", "TxChannle", "RxMessageName", \
+								"RxCANID", "RxPeriod", "RxDLC", "RxChannel", "RxMsk", "RxInterrupt", "RxDTC", "RouteCondiction"]
 
 	def get_file_pathname(self):
 		"""获取路由表路径"""
@@ -41,7 +47,7 @@ class MsgTableConvert(object):
 			self.ChannalMapping[dataFrame.values[i + 2][column_index_from_string('N') - 1]] = dataFrame.values[i +2][column_index_from_string('M') - 1]
 
 	# 创建目标单行数据
-	def build_des_column_data(self, LineNumber, Txchannal, src_num) -> list:
+	def build_des_column_data(self, LineNumber, Txchannal, src_num, changeid) -> list:
 		des_column_data_list = []
 
 		des_column_data_list.append(str(LineNumber))
@@ -70,21 +76,38 @@ class MsgTableConvert(object):
 			des_column_data_list.append('N')
 		else:
 			des_column_data_list.append('Y')
-		des_column_data_list.append('3')
+		if self.config.platInfo == "MAXUS":
+			des_column_data_list.append(str(self.src_row_data_all[src_num][column_index_from_string('R') - 1])) 
+		else:
+			des_column_data_list.append('3')
+
+		if self.config.platInfo == "MAXUS":
+			if self.src_row_data_all[src_num][column_index_from_string('P') - 1] != "None" and self.src_row_data_all[src_num][column_index_from_string('P') - 1] != "NA":
+				des_column_data_list.append(str(self.cannode_data.index(str(self.src_row_data_all[src_num][column_index_from_string('P') - 1]))))
+			else:
+				des_column_data_list.append("0xFF")
+			des_column_data_list.append(changeid)
+			 
 
 		return des_column_data_list
 
 	# 获取要发送的通道
 	def get_TxChannal(self, src_num) -> list:
 		TxChannalList = []
+		ChangeIDList = []
 		i = 1
 		for tick in self.src_row_data_all[src_num][column_index_from_string('L') - 1 : column_index_from_string('G') -2 : -1]:
 		#print(self.src_row_data_all[src_num][column_index_from_string('F')])
-			if tick == '√':
+			if tick.find('√') != -1:
 				TxChannalList.append(i)
-			i += 1
+				if re.match("^0x(([0-9 A-F]{1,2})|([0-7]{1}[0-9 A-F]{2}))$", tick[2:-1], flags=re.IGNORECASE):
+					ChangeIDList.append(tick[2:-1])
+				else:
+					ChangeIDList.append('0')
 
-		return TxChannalList
+			i += 1
+		# print(ChangeIDList)
+		return TxChannalList, ChangeIDList
 
 	# 创建所有目标数据
 	def build_des_column_data_all(self):
@@ -92,14 +115,14 @@ class MsgTableConvert(object):
 		diag_LineNumber = 1
 		for num in range(len(self.src_row_data_all)):
 			if self.src_row_data_all[num][column_index_from_string('Q') - 1] != 'Y':
-				TxChList = self.get_TxChannal(num)
+				TxChList, ChangeIDList = self.get_TxChannal(num)
 				#print(TxChList)
 				if len(TxChList) > 0:
-					for TxCh in TxChList:
-						self.des_column_data_all.append(self.build_des_column_data(LineNumber, TxCh, num))
+					for index, TxCh in enumerate(TxChList):
+						self.des_column_data_all.append(self.build_des_column_data(LineNumber, TxCh, num, ChangeIDList[index]))
 						LineNumber += 1
 				else:
-					self.des_column_data_all.append(self.build_des_column_data(LineNumber, 0, num))
+					self.des_column_data_all.append(self.build_des_column_data(LineNumber, 0, num, '0'))
 					LineNumber += 1
 			# else:
 			# 	if self.src_row_data_all[num][column_index_from_string('F') - 1] == sys.argv[1]:
@@ -124,7 +147,14 @@ class MsgTableConvert(object):
 	# 主函数
 	def main_pandas(self):
 		if self.pathname != "":
-			dataFrame = read_excel(self.pathname, sheet_name="Sheet1", header=None, na_values="", usecols="A:Q")
+			if self.config.platInfo == "MAXUS":
+				dataFrame = read_excel(self.pathname, sheet_name="Sheet1", header=None, na_values="", usecols="A:R")
+				dataFrame_node = read_excel(self.pathname, sheet_name="CANNode", header=None, na_values="", usecols="A:C")
+				self.cannode_data = dataFrame_node.fillna("None").values[2:].tolist()
+				self.cannode_data = [self.cannode_data[i][0] for i in range(len(self.cannode_data))]
+				print(self.cannode_data)
+			else:
+				dataFrame = read_excel(self.pathname, sheet_name="Sheet1", header=None, na_values="", usecols="A:Q")
 			
 			self.src_row_data_all = dataFrame.fillna("None").values[2:].tolist()
 

@@ -13,13 +13,16 @@ from fileencryption import fileencryption
 def run(config, msgRoute, signalRoute, readHex):
 	# 读取数据
 	# config.read_data()
-	msgRoute.read_data("O")
+	if config.platInfo == "MAXUS":
+		msgRoute.read_data("Q")
+	else:
+		msgRoute.read_data("O")
 
-	if config.platInfo == "GAW1.2_OldPlatform" or config.platInfo == "GAW1.2_NewPlatform" or config.platInfo == "CHJ":
-		signalRoute.read_data("T")
-		# print(signalRoute.dataList)
-	elif config.platInfo == "Qoros_C6M0":
+	if config.platInfo == "Qoros_C6M0":
 		signalRoute.read_data("U")
+		# print(signalRoute.dataList)
+	else:
+		signalRoute.read_data("T")
 
 	readHex.read_hex()
 
@@ -115,7 +118,7 @@ def run(config, msgRoute, signalRoute, readHex):
 	pbMsgSrcTable.get_valid_data(signalRoute)
 	pbMsgSrcTable.data_handle()
 	pbMsgSrcTable.build_table()
-	if config.platInfo == "CHJ":
+	if config.platInfo == "CHJ" or config.platInfo == "MAXUS":
 		pbMsgSrcTable.build_hex_data(pbMsgSrcTable.PbMsgSrcTableList)
 		pbMsgSrcTable.modify_hex_data(readHex.hexData, pbMsgSrcTable.tableAddr, pbMsgSrcTable.structLen*pbMsgSrcTable.tableLen, pbMsgSrcTable.hexDataList)
 
@@ -168,7 +171,7 @@ def run(config, msgRoute, signalRoute, readHex):
 	# 只有当用户模式为开发者模式时才会生成配置表文件；客户模式下只可操作加密hex.
 	if config.user_type == "Developer":
 		# 写入Table.c文件
-		if config.platInfo == "GAW1.2_OldPlatform" or config.platInfo == "Qoros_C6M0" or config.platInfo == "CHJ":
+		if config.platInfo == "GAW1.2_OldPlatform" or config.platInfo == "Qoros_C6M0" or config.platInfo == "CHJ" or config.platInfo == "MAXUS":
 			writeData.write_table_c(canFullIdNameISR.CAN_FULL_ID_NAME_ISR)
 			writeData.write_table_c(pbDirectRoutingTable.PB_DirectRoutingTable)
 			writeData.write_table_c(pbMsgRoutingTable.PB_MsgRoutingTable)

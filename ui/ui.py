@@ -39,7 +39,7 @@ class MainWindow(object):
 			# 创建一个适用平台下拉列表
 			self.apply_platform_val = StringVar()#窗体自带的文本，新建一个值
 			self.apply_platform = ttk.Combobox(self.window, textvariable=self.apply_platform_val, width=54, state='readonly')
-			self.apply_platform["values"]=("选择平台","GAW1.2_NewPlatform","GAW1.2_OldPlatform","Qoros_C6M0","CHJ")  
+			self.apply_platform["values"]=("选择平台","GAW1.2_NewPlatform","GAW1.2_OldPlatform","Qoros_C6M0","CHJ","MAXUS")  
 			self.apply_platform.current(0)  #选择第一个  
 			self.apply_platform.bind("<<ComboboxSelected>>", self.select_apply_platform)  #绑定事件,(下拉列表框被选中时，绑定go()函数)  
 			self.apply_platform.place(x=91, y=15)
@@ -195,27 +195,27 @@ class MyWindow(MainWindow, RegWindow):
 
 	def run(self):
 		'''主界面运行按钮回调函数'''
-		# try:
-		# 当用户为客户时，必须选择源hex文件（客户版）
-		if self.config.user_type == "Customer" and self.readHex.pathName == "":
-			messagebox.showinfo(title='提示', message='请选择源hex文件！')
-		else:
-			if self.config.user_type == "Developer":
-				if self.paltform != "选择平台":
-					self.config.platInfo = self.paltform
-				else:
-					messagebox.showinfo(title='提示', message='请选择应用平台')
-					return
-
-			ret = self.ui_run(self.config, self.msgRoute, self.signalRoute, self.readHex)
-			if ret == "Success":
-				messagebox.showinfo(title='提示', message='运行结束')
-			elif ret == "DecryptionError":
-				messagebox.showinfo(title='提示', message='Hex解密错误，请选择正确的加密Hex文件')
+		try:
+			# 当用户为客户时，必须选择源hex文件（客户版）
+			if self.config.user_type == "Customer" and self.readHex.pathName == "":
+				messagebox.showinfo(title='提示', message='请选择源hex文件！')
 			else:
-				messagebox.showinfo(title='提示', message='{} 第 {} 行，第 {} 列出错：{}'.format(ret[0], ret[1], ret[2], ret[3]))
-		# except:
-		# 	messagebox.showinfo(title='提示', message='运行出错，请检查需求表！！！')
+				if self.config.user_type == "Developer":
+					if self.paltform != "选择平台":
+						self.config.platInfo = self.paltform
+					else:
+						messagebox.showinfo(title='提示', message='请选择应用平台')
+						return
+
+				ret = self.ui_run(self.config, self.msgRoute, self.signalRoute, self.readHex)
+				if ret == "Success":
+					messagebox.showinfo(title='提示', message='运行结束')
+				elif ret == "DecryptionError":
+					messagebox.showinfo(title='提示', message='Hex解密错误，请选择正确的加密Hex文件')
+				else:
+					messagebox.showinfo(title='提示', message='{} 第 {} 行，第 {} 列出错：{}'.format(ret[0], ret[1], ret[2], ret[3]))
+		except:
+			messagebox.showinfo(title='提示', message='运行出错，请检查需求表！！！')
 
 	def enter_run_area(self, *args):
 		'''鼠标悬浮'''

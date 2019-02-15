@@ -345,7 +345,7 @@ class CheckError(object):
 					break
 			# 发送信号数据校验
 			# 单行数据校验,新平台、老平台表一致；观致增加了发送字节序特殊另行elif校验
-			if self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "GAW1.2_NewPlatform" or self.config.platInfo == "CHJ":
+			if self.config.platInfo == "GAW1.2_OldPlatform" or self.config.platInfo == "GAW1.2_NewPlatform" or self.config.platInfo == "CHJ" or self.config.platInfo == "MAXUS":
 				if subList[signalHeaderList.index("ByteOrder")] == '0':
 					if not (int(subList[signalHeaderList.index("TxSigLen")]) <= \
 						(int(subList[signalHeaderList.index("TxStartBit")]) // 8) * 8 + (8 - (int(subList[signalHeaderList.index("TxStartBit")]) % 8))):
