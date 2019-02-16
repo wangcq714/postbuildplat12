@@ -664,7 +664,8 @@ class PbDirectRoutingTable(RoutingTable, HexBase):
 		self.PB_DirectRoutingTable.append("{\n")
 		for index, subList in enumerate(self.routerTableISRList):
 			# print(subList)
-			self.PB_DirectRoutingTable.append('/*' + subList[0] + '*/' + '{')
+			# self.PB_DirectRoutingTable.append('/*' + subList[0] + '*/' + '{')
+			self.PB_DirectRoutingTable.append('/*' + subList[self.routerTableListHeader.index("RxCANID")] + ": NODE_" + get_column_letter(int(subList[self.routerTableListHeader.index("RxChannel")])) + '*/' + '{')
 			self.PB_DirectRoutingTable.append(','.join(subList[self.routerTableListHeader.index("dest_mo_num"):self.routerTableListHeader.index("RxInterrupt")]))
 			self.PB_DirectRoutingTable.append('},' + "/*" + str(index) + "*/" + '\n')
 		else:

@@ -220,24 +220,24 @@ class MsgCheckError(object):
 						col = get_column_letter(headerList.index("周期") + 1)
 						hint = "源报文周期与该行之上同网段同ID源报文对应周期不一致，请保持一致"
 						break
-					if subList[msgHeaderList.index("dlc")] != first_msg_data[msgHeaderList.index("dlc")]:
-						col = get_column_letter(msgHeaderList.index("dlc") + 1)
+					if subList[headerList.index("dlc")] != first_msg_data[headerList.index("dlc")]:
+						col = get_column_letter(headerList.index("dlc") + 1)
 						hint = "源报文DLC与该行之上同网段同ID源报文对应DLC不一致，请保持一致"
 						break
-					if subList[msgHeaderList.index("DTC码")] != first_msg_data[msgHeaderList.index("DTC码")]:
-						col = get_column_letter(msgHeaderList.index("DTC码") + 1)
+					if subList[headerList.index("DTC码")] != first_msg_data[headerList.index("DTC码")]:
+						col = get_column_letter(headerList.index("DTC码") + 1)
 						hint = "源报文DTC码与该行之上同网段同ID源报文对应DTC码不一致，请保持一致"
 						break
-					if subList[msgHeaderList.index("RxInterrupt")] != first_msg_data[msgHeaderList.index("RxInterrupt")]:
-						col = get_column_letter(msgHeaderList.index("RxInterrupt") + 1)
+					if subList[headerList.index("RxInterrupt")] != first_msg_data[headerList.index("RxInterrupt")]:
+						col = get_column_letter(headerList.index("RxInterrupt") + 1)
 						hint = "源报文RxInterrupt与该行之上同网段同ID源报文对应RxInterrupt不一致，请保持一致"
 						break
-					if subList[msgHeaderList.index("MsgNode")] != first_msg_data[msgHeaderList.index("MsgNode")]:
-						col = get_column_letter(msgHeaderList.index("MsgNode") + 1)
+					if subList[headerList.index("MsgNode")] != first_msg_data[headerList.index("MsgNode")]:
+						col = get_column_letter(headerList.index("MsgNode") + 1)
 						hint = "源报文MsgNode与该行之上同网段同ID源报文对应MsgNode不一致，请保持一致"
 						break
-					if subList[msgHeaderList.index("DiagMsg")] != first_msg_data[msgHeaderList.index("DiagMsg")]:
-						col = get_column_letter(msgHeaderList.index("DiagMsg") + 1)
+					if subList[headerList.index("DiagMsg")] != first_msg_data[headerList.index("DiagMsg")]:
+						col = get_column_letter(headerList.index("DiagMsg") + 1)
 						hint = "源报文DiagMsg与该行之上同网段同ID源报文对应DiagMsg不一致，请保持一致"
 						break
 		if hint:
