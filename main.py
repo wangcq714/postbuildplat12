@@ -270,6 +270,8 @@ def cmd_main():
 	run(config, msgRoute, signalRoute, readHex)
 
 
-if __name__ == '__main__':
-	# cmd_main()
-	ui_main()
+# if __name__ == '__main__':
+# 	# cmd_main()
+# 	ui_main()
+
+ui_main()

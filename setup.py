@@ -15,11 +15,13 @@ base = 'Win32GUI' if sys.platform=='win32' else None
 
 includes = []
 include_files = [r"C:\Progra~1\Python36\Lib\site-packages\numpy", 
-				 r"C:\Progra~1\Python36\DLLs\tcl86t.dll",
+				         r"C:\Progra~1\Python36\DLLs\tcl86t.dll",
+                 r"D:\share\postbuildtool\postbuildplat12\config.ini",
+                 r"D:\share\postbuildtool\postbuildplat12\image",
                  r"C:\Progra~1\Python36\DLLs\tk86t.dll"]
 
 executables = [
-    Executable('D:\\share\\postbuildtool\\postbuildplat12_copy\\main.py', base=base, targetName = 'main.exe')
+    Executable('D:\\share\\postbuildtool\\postbuildplat12\\main.py', base=base, targetName = 'main.exe')
 ]
 
 setup(name='postbuild',
