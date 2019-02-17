@@ -11,9 +11,9 @@ class MainWindow(object):
 	def setup(self):
 		"""主界面参数配置"""
 		if self.config.user_type == "Customer":
-			self.window.title("PostBuildTool(客户版)  Kanwairen")
+			self.window.title("PostBuildTool(客户版)")
 		elif self.config.user_type == "Developer":
-			self.window.title("PostBuildTool(开发版)  Kanwairen")
+			self.window.title("PostBuildTool(开发版)")
 		self.window.geometry('580x350')                 #是x 不是*
 		self.window.iconbitmap("image/icon.ico")
 		self.window.resizable(width=False, height=False) #宽不可变, 高可变, 默认为True
